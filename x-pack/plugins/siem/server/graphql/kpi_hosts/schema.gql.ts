@@ -16,6 +16,7 @@ export const kpiHostsSchema = gql`
     key: Float
     key_as_string: String
     count: Count
+    doc_count: Float
   }
 
   type KpiHostsData {

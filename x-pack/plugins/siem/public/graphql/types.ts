@@ -1031,17 +1031,39 @@ export interface UsersItem {
 export interface KpiNetworkData {
   networkEvents?: number | null;
 
+  networkEventsHistogram?: (HistogramData | null)[] | null;
+
   uniqueFlowId?: number | null;
 
   activeAgents?: number | null;
 
   uniqueSourcePrivateIps?: number | null;
 
+  uniqueSourcePrivateIpsHistogram?: (HistogramData | null)[] | null;
+
   uniqueDestinationPrivateIps?: number | null;
+
+  uniqueDestinationPrivateIpsHistogram?: (HistogramData | null)[] | null;
 
   dnsQueries?: number | null;
 
   tlsHandshakes?: number | null;
+}
+
+export interface HistogramData {
+  key?: number | null;
+
+  key_as_string?: string | null;
+
+  count?: Count | null;
+
+  doc_count?: number | null;
+}
+
+export interface Count {
+  value?: number | null;
+
+  doc_count?: number | null;
 }
 
 export interface KpiHostsData {
@@ -1064,20 +1086,6 @@ export interface KpiHostsData {
   uniqueDestinationIps?: number | null;
 
   uniqueDestinationIpsHistogram?: (HistogramData | null)[] | null;
-}
-
-export interface HistogramData {
-  key?: number | null;
-
-  key_as_string?: string | null;
-
-  count?: Count | null;
-}
-
-export interface Count {
-  value?: number | null;
-
-  doc_count?: number | null;
 }
 
 export interface NetworkTopNFlowData {
@@ -2484,18 +2492,30 @@ export namespace GetKpiNetworkQuery {
 
     networkEvents?: number | null;
 
+    networkEventsHistogram?: (NetworkEventsHistogram | null)[] | null;
+
     uniqueFlowId?: number | null;
 
     activeAgents?: number | null;
 
     uniqueSourcePrivateIps?: number | null;
 
+    uniqueSourcePrivateIpsHistogram?: (UniqueSourcePrivateIpsHistogram | null)[] | null;
+
     uniqueDestinationPrivateIps?: number | null;
+
+    uniqueDestinationPrivateIpsHistogram?: (UniqueDestinationPrivateIpsHistogram | null)[] | null;
 
     dnsQueries?: number | null;
 
     tlsHandshakes?: number | null;
   };
+
+  export type NetworkEventsHistogram = ChartFields.Fragment;
+
+  export type UniqueSourcePrivateIpsHistogram = ChartFields.Fragment;
+
+  export type UniqueDestinationPrivateIpsHistogram = ChartFields.Fragment;
 }
 
 export namespace GetNetworkDnsQuery {
@@ -3856,5 +3876,23 @@ export namespace ChartFields {
     value?: number | null;
 
     doc_count?: number | null;
+  };
+}
+
+export namespace ChartFields {
+  export type Fragment = {
+    __typename?: 'HistogramData';
+
+    key_as_string?: string | null;
+
+    doc_count?: number | null;
+
+    count?: Count | null;
+  };
+
+  export type Count = {
+    __typename?: 'Count';
+
+    value?: number | null;
   };
 }

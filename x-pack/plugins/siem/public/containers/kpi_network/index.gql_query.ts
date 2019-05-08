@@ -7,15 +7,32 @@
 import gql from 'graphql-tag';
 
 export const kpiNetworkQuery = gql`
+  fragment ChartFields on HistogramData {
+    key_as_string
+    doc_count
+    count {
+      value
+    }
+  }
+
   query GetKpiNetworkQuery($sourceId: ID!, $timerange: TimerangeInput!, $filterQuery: String) {
     source(id: $sourceId) {
       id
       KpiNetwork(timerange: $timerange, filterQuery: $filterQuery) {
         networkEvents
+        networkEventsHistogram {
+          ...ChartFields
+        }
         uniqueFlowId
         activeAgents
         uniqueSourcePrivateIps
+        uniqueSourcePrivateIpsHistogram {
+          ...ChartFields
+        }
         uniqueDestinationPrivateIps
+        uniqueDestinationPrivateIpsHistogram {
+          ...ChartFields
+        }
         dnsQueries
         tlsHandshakes
       }

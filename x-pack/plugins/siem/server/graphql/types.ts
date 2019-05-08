@@ -1060,17 +1060,39 @@ export interface UsersItem {
 export interface KpiNetworkData {
   networkEvents?: number | null;
 
+  networkEventsHistogram?: (HistogramData | null)[] | null;
+
   uniqueFlowId?: number | null;
 
   activeAgents?: number | null;
 
   uniqueSourcePrivateIps?: number | null;
 
+  uniqueSourcePrivateIpsHistogram?: (HistogramData | null)[] | null;
+
   uniqueDestinationPrivateIps?: number | null;
+
+  uniqueDestinationPrivateIpsHistogram?: (HistogramData | null)[] | null;
 
   dnsQueries?: number | null;
 
   tlsHandshakes?: number | null;
+}
+
+export interface HistogramData {
+  key?: number | null;
+
+  key_as_string?: string | null;
+
+  count?: Count | null;
+
+  doc_count?: number | null;
+}
+
+export interface Count {
+  value?: number | null;
+
+  doc_count?: number | null;
 }
 
 export interface KpiHostsData {
@@ -1093,20 +1115,6 @@ export interface KpiHostsData {
   uniqueDestinationIps?: number | null;
 
   uniqueDestinationIpsHistogram?: (HistogramData | null)[] | null;
-}
-
-export interface HistogramData {
-  key?: number | null;
-
-  key_as_string?: string | null;
-
-  count?: Count | null;
-}
-
-export interface Count {
-  value?: number | null;
-
-  doc_count?: number | null;
 }
 
 export interface NetworkTopNFlowData {
@@ -5146,14 +5154,32 @@ export namespace KpiNetworkDataResolvers {
   export interface Resolvers<Context = SiemContext, TypeParent = KpiNetworkData> {
     networkEvents?: NetworkEventsResolver<number | null, TypeParent, Context>;
 
+    networkEventsHistogram?: NetworkEventsHistogramResolver<
+      (HistogramData | null)[] | null,
+      TypeParent,
+      Context
+    >;
+
     uniqueFlowId?: UniqueFlowIdResolver<number | null, TypeParent, Context>;
 
     activeAgents?: ActiveAgentsResolver<number | null, TypeParent, Context>;
 
     uniqueSourcePrivateIps?: UniqueSourcePrivateIpsResolver<number | null, TypeParent, Context>;
 
+    uniqueSourcePrivateIpsHistogram?: UniqueSourcePrivateIpsHistogramResolver<
+      (HistogramData | null)[] | null,
+      TypeParent,
+      Context
+    >;
+
     uniqueDestinationPrivateIps?: UniqueDestinationPrivateIpsResolver<
       number | null,
+      TypeParent,
+      Context
+    >;
+
+    uniqueDestinationPrivateIpsHistogram?: UniqueDestinationPrivateIpsHistogramResolver<
+      (HistogramData | null)[] | null,
       TypeParent,
       Context
     >;
@@ -5165,6 +5191,11 @@ export namespace KpiNetworkDataResolvers {
 
   export type NetworkEventsResolver<
     R = number | null,
+    Parent = KpiNetworkData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type NetworkEventsHistogramResolver<
+    R = (HistogramData | null)[] | null,
     Parent = KpiNetworkData,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
@@ -5183,8 +5214,18 @@ export namespace KpiNetworkDataResolvers {
     Parent = KpiNetworkData,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
+  export type UniqueSourcePrivateIpsHistogramResolver<
+    R = (HistogramData | null)[] | null,
+    Parent = KpiNetworkData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
   export type UniqueDestinationPrivateIpsResolver<
     R = number | null,
+    Parent = KpiNetworkData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type UniqueDestinationPrivateIpsHistogramResolver<
+    R = (HistogramData | null)[] | null,
     Parent = KpiNetworkData,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
@@ -5198,6 +5239,58 @@ export namespace KpiNetworkDataResolvers {
     Parent = KpiNetworkData,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
+}
+
+export namespace HistogramDataResolvers {
+  export interface Resolvers<Context = SiemContext, TypeParent = HistogramData> {
+    key?: KeyResolver<number | null, TypeParent, Context>;
+
+    key_as_string?: KeyAsStringResolver<string | null, TypeParent, Context>;
+
+    count?: CountResolver<Count | null, TypeParent, Context>;
+
+    doc_count?: DocCountResolver<number | null, TypeParent, Context>;
+  }
+
+  export type KeyResolver<
+    R = number | null,
+    Parent = HistogramData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type KeyAsStringResolver<
+    R = string | null,
+    Parent = HistogramData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type CountResolver<
+    R = Count | null,
+    Parent = HistogramData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type DocCountResolver<
+    R = number | null,
+    Parent = HistogramData,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+}
+
+export namespace CountResolvers {
+  export interface Resolvers<Context = SiemContext, TypeParent = Count> {
+    value?: ValueResolver<number | null, TypeParent, Context>;
+
+    doc_count?: DocCountResolver<number | null, TypeParent, Context>;
+  }
+
+  export type ValueResolver<R = number | null, Parent = Count, Context = SiemContext> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type DocCountResolver<R = number | null, Parent = Count, Context = SiemContext> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
 }
 
 export namespace KpiHostsDataResolvers {
@@ -5289,51 +5382,6 @@ export namespace KpiHostsDataResolvers {
     Parent = KpiHostsData,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
-}
-
-export namespace HistogramDataResolvers {
-  export interface Resolvers<Context = SiemContext, TypeParent = HistogramData> {
-    key?: KeyResolver<number | null, TypeParent, Context>;
-
-    key_as_string?: KeyAsStringResolver<string | null, TypeParent, Context>;
-
-    count?: CountResolver<Count | null, TypeParent, Context>;
-  }
-
-  export type KeyResolver<
-    R = number | null,
-    Parent = HistogramData,
-    Context = SiemContext
-  > = Resolver<R, Parent, Context>;
-  export type KeyAsStringResolver<
-    R = string | null,
-    Parent = HistogramData,
-    Context = SiemContext
-  > = Resolver<R, Parent, Context>;
-  export type CountResolver<
-    R = Count | null,
-    Parent = HistogramData,
-    Context = SiemContext
-  > = Resolver<R, Parent, Context>;
-}
-
-export namespace CountResolvers {
-  export interface Resolvers<Context = SiemContext, TypeParent = Count> {
-    value?: ValueResolver<number | null, TypeParent, Context>;
-
-    doc_count?: DocCountResolver<number | null, TypeParent, Context>;
-  }
-
-  export type ValueResolver<R = number | null, Parent = Count, Context = SiemContext> = Resolver<
-    R,
-    Parent,
-    Context
-  >;
-  export type DocCountResolver<R = number | null, Parent = Count, Context = SiemContext> = Resolver<
-    R,
-    Parent,
-    Context
-  >;
 }
 
 export namespace NetworkTopNFlowDataResolvers {
