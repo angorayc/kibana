@@ -6,7 +6,13 @@
 
 import { get, getOr, has, head, set } from 'lodash/fp';
 
-import { FirstLastSeenHost, HostItem, HostsData, HostsEdges } from '../../graphql/types';
+import {
+  FirstLastSeenHost,
+  HostItem,
+  HostsData,
+  HostsEdges,
+  AgentTypesHost,
+} from '../../graphql/types';
 import { hostFieldsMap } from '../ecs_fields';
 import { FrameworkAdapter, FrameworkRequest } from '../framework';
 import { TermAggregation } from '../types';
@@ -14,6 +20,7 @@ import { TermAggregation } from '../types';
 import { buildHostOverviewQuery } from './query.detail_host.dsl';
 import { buildHostsQuery } from './query.hosts.dsl';
 import { buildLastFirstSeenHostQuery } from './query.last_first_seen_host.dsl';
+
 import {
   HostAggEsData,
   HostAggEsItem,
@@ -24,7 +31,9 @@ import {
   HostsAdapter,
   HostsRequestOptions,
   HostValue,
+  HostAgentTypesRequestOptions,
 } from './types';
+import { buildHostAgentTypesQuery } from './query.agent_types_host.dsl';
 
 export class ElasticsearchHostsAdapter implements HostsAdapter {
   constructor(private readonly framework: FrameworkAdapter) {}
@@ -75,6 +84,25 @@ export class ElasticsearchHostsAdapter implements HostsAdapter {
     return {
       firstSeen: get('firstSeen.value_as_string', aggregations),
       lastSeen: get('lastSeen.value_as_string', aggregations),
+    };
+  }
+
+  public async getHostAgentTypes(
+    request: FrameworkRequest,
+    options: HostAgentTypesRequestOptions
+  ): Promise<AgentTypesHost> {
+    const response = await this.framework.callWithRequest<HostAggEsData, TermAggregation>(
+      request,
+      'search',
+      buildHostAgentTypesQuery(options)
+    );
+    const aggregations: HostAggEsItem = get('aggregations', response) || {};
+
+    console.log('response:', JSON.stringify(response));
+    return {
+      hostAuditbeatCount: get('firstSeen.value_as_string', aggregations),
+      hostWinlogbeatsCount: get('lastSeen.value_as_string', aggregations),
+      hostFilebeatsCount: get('lastSeen.value_as_string', aggregations),
     };
   }
 }

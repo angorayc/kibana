@@ -12,6 +12,7 @@ import { HostItem } from '../../../../graphql/types';
 import { getEmptyTagValue } from '../../../empty_value';
 
 import * as i18n from './translations';
+import { AgentTypes } from '../agent_types';
 import { FirstLastSeenHost, FirstLastSeenHostType } from '../first_last_seen_host';
 import { DefaultFieldRenderer, hostIdRenderer } from '../../../field_renderers/field_renderers';
 import { LoadingPanel } from '../../../loading';

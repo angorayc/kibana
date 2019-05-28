@@ -122,6 +122,8 @@ export interface Source {
 
   HostFirstLastSeen: FirstLastSeenHost;
 
+  HostAgentTypes: HostAgentTypes;
+
   IpOverview?: IpOverviewData | null;
 
   Domains: DomainsData;
@@ -899,6 +901,16 @@ export interface FirstLastSeenHost {
   lastSeen?: Date | null;
 }
 
+export interface HostAgentTypes {
+  _id?: string | null;
+
+  hostAuditbeatCount: number;
+
+  hostWinlogbeatsCount: number;
+
+  hostFilebeatsCount: number;
+}
+
 export interface IpOverviewData {
   client?: Overview | null;
 
@@ -1447,6 +1459,10 @@ export interface HostFields {
   type?: string | null;
 }
 
+export interface AgentTypesHost {
+  _id?: string | null;
+}
+
 // ====================================================
 // InputTypes
 // ====================================================
@@ -1769,6 +1785,15 @@ export interface HostFirstLastSeenSourceArgs {
   id?: string | null;
 
   hostName: string;
+
+  defaultIndex: string[];
+}
+export interface HostAgentTypesSourceArgs {
+  id?: string | null;
+
+  hostName: string;
+
+  timerange: TimerangeInput;
 
   defaultIndex: string[];
 }
@@ -2528,6 +2553,39 @@ export namespace GetLastEventTimeQuery {
     __typename?: 'LastEventTimeData';
 
     lastSeen?: Date | null;
+  };
+}
+
+export namespace GetHostAgentTypesQuery {
+  export type Variables = {
+    sourceId: string;
+    hostName: string;
+    timerange: TimerangeInput;
+    defaultIndex: string[];
+  };
+
+  export type Query = {
+    __typename?: 'Query';
+
+    source: Source;
+  };
+
+  export type Source = {
+    __typename?: 'Source';
+
+    id: string;
+
+    HostAgentTypes: HostAgentTypes;
+  };
+
+  export type HostAgentTypes = {
+    __typename?: 'HostAgentTypes';
+
+    hostAuditbeatCount: number;
+
+    hostWinlogbeatsCount: number;
+
+    hostFilebeatsCount: number;
   };
 }
 

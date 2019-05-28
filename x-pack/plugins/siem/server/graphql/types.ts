@@ -151,6 +151,8 @@ export interface Source {
 
   HostFirstLastSeen: FirstLastSeenHost;
 
+  HostAgentTypes: HostAgentTypes;
+
   IpOverview?: IpOverviewData | null;
 
   Domains: DomainsData;
@@ -928,6 +930,16 @@ export interface FirstLastSeenHost {
   lastSeen?: Date | null;
 }
 
+export interface HostAgentTypes {
+  _id?: string | null;
+
+  hostAuditbeatCount: number;
+
+  hostWinlogbeatsCount: number;
+
+  hostFilebeatsCount: number;
+}
+
 export interface IpOverviewData {
   client?: Overview | null;
 
@@ -1476,6 +1488,10 @@ export interface HostFields {
   type?: string | null;
 }
 
+export interface AgentTypesHost {
+  _id?: string | null;
+}
+
 // ====================================================
 // InputTypes
 // ====================================================
@@ -1798,6 +1814,15 @@ export interface HostFirstLastSeenSourceArgs {
   id?: string | null;
 
   hostName: string;
+
+  defaultIndex: string[];
+}
+export interface HostAgentTypesSourceArgs {
+  id?: string | null;
+
+  hostName: string;
+
+  timerange: TimerangeInput;
 
   defaultIndex: string[];
 }
@@ -2399,6 +2424,8 @@ export namespace SourceResolvers {
 
     HostFirstLastSeen?: HostFirstLastSeenResolver<FirstLastSeenHost, TypeParent, Context>;
 
+    HostAgentTypes?: HostAgentTypesResolver<HostAgentTypes, TypeParent, Context>;
+
     IpOverview?: IpOverviewResolver<IpOverviewData | null, TypeParent, Context>;
 
     Domains?: DomainsResolver<DomainsData, TypeParent, Context>;
@@ -2567,6 +2594,21 @@ export namespace SourceResolvers {
     id?: string | null;
 
     hostName: string;
+
+    defaultIndex: string[];
+  }
+
+  export type HostAgentTypesResolver<
+    R = HostAgentTypes,
+    Parent = Source,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context, HostAgentTypesArgs>;
+  export interface HostAgentTypesArgs {
+    id?: string | null;
+
+    hostName: string;
+
+    timerange: TimerangeInput;
 
     defaultIndex: string[];
   }
@@ -5294,6 +5336,39 @@ export namespace FirstLastSeenHostResolvers {
   > = Resolver<R, Parent, Context>;
 }
 
+export namespace HostAgentTypesResolvers {
+  export interface Resolvers<Context = SiemContext, TypeParent = HostAgentTypes> {
+    _id?: IdResolver<string | null, TypeParent, Context>;
+
+    hostAuditbeatCount?: HostAuditbeatCountResolver<number, TypeParent, Context>;
+
+    hostWinlogbeatsCount?: HostWinlogbeatsCountResolver<number, TypeParent, Context>;
+
+    hostFilebeatsCount?: HostFilebeatsCountResolver<number, TypeParent, Context>;
+  }
+
+  export type IdResolver<
+    R = string | null,
+    Parent = HostAgentTypes,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type HostAuditbeatCountResolver<
+    R = number,
+    Parent = HostAgentTypes,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type HostWinlogbeatsCountResolver<
+    R = number,
+    Parent = HostAgentTypes,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+  export type HostFilebeatsCountResolver<
+    R = number,
+    Parent = HostAgentTypes,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+}
+
 export namespace IpOverviewDataResolvers {
   export interface Resolvers<Context = SiemContext, TypeParent = IpOverviewData> {
     client?: ClientResolver<Overview | null, TypeParent, Context>;
@@ -7185,6 +7260,18 @@ export namespace HostFieldsResolvers {
   export type TypeResolver<
     R = string | null,
     Parent = HostFields,
+    Context = SiemContext
+  > = Resolver<R, Parent, Context>;
+}
+
+export namespace AgentTypesHostResolvers {
+  export interface Resolvers<Context = SiemContext, TypeParent = AgentTypesHost> {
+    _id?: IdResolver<string | null, TypeParent, Context>;
+  }
+
+  export type IdResolver<
+    R = string | null,
+    Parent = AgentTypesHost,
     Context = SiemContext
   > = Resolver<R, Parent, Context>;
 }

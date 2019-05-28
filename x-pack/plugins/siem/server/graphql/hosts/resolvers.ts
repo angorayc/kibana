@@ -13,6 +13,7 @@ import {
   HostOverviewRequestOptions,
   HostsRequestOptions,
   HostLastFirstSeenRequestOptions,
+  HostAgentTypesRequestOptions,
 } from '../../lib/hosts';
 import { getFields } from '../../utils/build_query';
 import { createOptions } from '../../utils/build_query/create_options';
@@ -33,6 +34,11 @@ type QueryHostFirstLastSeenResolver = ChildResolverOf<
   QuerySourceResolver
 >;
 
+type QueryHostAgentTypesResolver = ChildResolverOf<
+  AppResolverOf<SourceResolvers.HostAgentTypesResolver>,
+  QuerySourceResolver
+>;
+
 export interface HostsResolversDeps {
   hosts: Hosts;
 }
@@ -44,6 +50,7 @@ export const createHostsResolvers = (
     Hosts: QueryHostsResolver;
     HostOverview: QueryHostOverviewResolver;
     HostFirstLastSeen: QueryHostFirstLastSeenResolver;
+    HostAgentTypes: QueryHostAgentTypesResolver;
   };
 } => ({
   Source: {
@@ -73,6 +80,14 @@ export const createHostsResolvers = (
         defaultIndex: args.defaultIndex,
       };
       return libs.hosts.getHostFirstLastSeen(req, options);
+    },
+    async HostAgentTypes(source, args, { req }) {
+      const options: HostAgentTypesRequestOptions = {
+        sourceConfiguration: source.configuration,
+        hostName: args.hostName,
+        defaultIndex: args.defaultIndex,
+      };
+      return libs.hosts.getHostAgentTypes(req, options);
     },
   },
 });

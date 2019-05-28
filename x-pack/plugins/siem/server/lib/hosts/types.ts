@@ -12,6 +12,7 @@ import {
   HostsSortField,
   SourceConfiguration,
   TimerangeInput,
+  AgentTypesHost,
 } from '../../graphql/types';
 import { FrameworkRequest, RequestOptions } from '../framework';
 import { Hit, Hits, SearchHit } from '../types';
@@ -23,6 +24,10 @@ export interface HostsAdapter {
     req: FrameworkRequest,
     options: HostLastFirstSeenRequestOptions
   ): Promise<FirstLastSeenHost>;
+  getHostAgentTypes(
+    req: FrameworkRequest,
+    options: HostAgentTypesRequestOptions
+  ): Promise<AgentTypesHost>;
 }
 
 type StringOrNumber = string | number;
@@ -54,6 +59,11 @@ export interface HostOverviewRequestOptions extends HostLastFirstSeenRequestOpti
   fields: string[];
   timerange: TimerangeInput;
   defaultIndex: string[];
+}
+
+export interface HostAgentTypesRequestOptions extends HostLastFirstSeenRequestOptions {
+  fields: string[];
+  timerange: TimerangeInput;
 }
 
 export interface HostValue {

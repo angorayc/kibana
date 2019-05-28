@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { FirstLastSeenHost, HostItem, HostsData } from '../../graphql/types';
+import { FirstLastSeenHost, HostItem, HostsData, AgentTypesHost } from '../../graphql/types';
 import { FrameworkRequest } from '../framework';
 
 import {
@@ -12,6 +12,7 @@ import {
   HostLastFirstSeenRequestOptions,
   HostsAdapter,
   HostsRequestOptions,
+  HostAgentTypesRequestOptions,
 } from './types';
 
 export * from './elasticsearch_adapter';
@@ -36,5 +37,12 @@ export class Hosts {
     options: HostLastFirstSeenRequestOptions
   ): Promise<FirstLastSeenHost> {
     return await this.adapter.getHostFirstLastSeen(req, options);
+  }
+
+  public async getHostAgentTypes(
+    req: FrameworkRequest,
+    options: HostAgentTypesRequestOptions
+  ): Promise<AgentTypesHost> {
+    return await this.adapter.getHostAgentTypes(req, options);
   }
 }

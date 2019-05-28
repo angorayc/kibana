@@ -74,6 +74,17 @@ export const hostsSchema = gql`
     direction: Direction!
   }
 
+  type HostAgentTypes {
+    _id: String
+    hostAuditbeatCount: Float!
+    hostWinlogbeatsCount: Float!
+    hostFilebeatsCount: Float!
+  }
+
+  type AgentTypesHost {
+    _id: String
+  }
+
   extend type Source {
     "Gets Hosts based on timerange and specified criteria, or all events in the timerange if no criteria is specified"
     Hosts(
@@ -91,5 +102,11 @@ export const hostsSchema = gql`
       defaultIndex: [String!]!
     ): HostItem!
     HostFirstLastSeen(id: String, hostName: String!, defaultIndex: [String!]!): FirstLastSeenHost!
+    HostAgentTypes(
+      id: String
+      hostName: String!
+      timerange: TimerangeInput!
+      defaultIndex: [String!]!
+    ): HostAgentTypes!
   }
 `;
