@@ -38,6 +38,7 @@ import { HostsKql } from './kql';
 import * as i18n from './translations';
 import { UrlStateContainer } from '../../components/url_state';
 import { AgentTypesHost } from '../../components/page/hosts/agent_types';
+import { useAgentTypesHostQuery } from '../../containers/hosts/agent_types';
 
 const basePath = chrome.getBasePath();
 
@@ -68,22 +69,7 @@ const HostsComponent = pure<HostsComponentProps>(({ filterQuery }) => (
                 <LastEventTime indexKey={LastEventIndexKey.hosts} />
                 <GlobalTime>
                   {({ to, from, setQuery }) => (
-                    <useAgentTypesHostQuery
-                      endDate={to}
-                      filterQuery={filterQuery}
-                      sourceId="default"
-                      startDate={from}
-                    >
-                      {({ kpiHosts, loading, id, refetch }) => (
-                        <KpiHostsComponentManage
-                          id={id}
-                          setQuery={setQuery}
-                          refetch={refetch}
-                          data={kpiHosts}
-                          loading={loading}
-                        />
-                      )}
-                    </useAgentTypesHostQuery>
+                    <AgentTypesHost startDate={from} endDate={to} setQuery={setQuery} />
                   )}
                 </GlobalTime>
               </>

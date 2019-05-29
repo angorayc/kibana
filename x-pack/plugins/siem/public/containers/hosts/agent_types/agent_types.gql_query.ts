@@ -9,13 +9,12 @@ import gql from 'graphql-tag';
 export const HostAgentTypesGqlQuery = gql`
   query GetHostAgentTypesQuery(
     $sourceId: ID!
-    $hostName: String!
     $timerange: TimerangeInput!
     $defaultIndex: [String!]!
   ) {
     source(id: $sourceId) {
       id
-      HostAgentTypes(hostName: $hostName, timerange: $timerange, defaultIndex: $defaultIndex) {
+      HostAgentTypes(timerange: $timerange, defaultIndex: $defaultIndex) {
         hostAuditbeatCount
         hostWinlogbeatsCount
         hostFilebeatsCount

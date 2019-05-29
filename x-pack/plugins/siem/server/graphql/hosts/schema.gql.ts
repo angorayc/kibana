@@ -104,7 +104,6 @@ export const hostsSchema = gql`
     HostFirstLastSeen(id: String, hostName: String!, defaultIndex: [String!]!): FirstLastSeenHost!
     HostAgentTypes(
       id: String
-      hostName: String!
       timerange: TimerangeInput!
       defaultIndex: [String!]!
     ): HostAgentTypes!

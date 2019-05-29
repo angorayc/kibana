@@ -1820,8 +1820,6 @@ export interface HostFirstLastSeenSourceArgs {
 export interface HostAgentTypesSourceArgs {
   id?: string | null;
 
-  hostName: string;
-
   timerange: TimerangeInput;
 
   defaultIndex: string[];
@@ -2605,8 +2603,6 @@ export namespace SourceResolvers {
   > = Resolver<R, Parent, Context, HostAgentTypesArgs>;
   export interface HostAgentTypesArgs {
     id?: string | null;
-
-    hostName: string;
 
     timerange: TimerangeInput;
 

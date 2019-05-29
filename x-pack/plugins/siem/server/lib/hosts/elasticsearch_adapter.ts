@@ -96,13 +96,13 @@ export class ElasticsearchHostsAdapter implements HostsAdapter {
       'search',
       buildHostAgentTypesQuery(options)
     );
-    const aggregations: HostAggEsItem = get('aggregations', response) || {};
+    const aggregations: HostAggEsItem = get('aggregations.agentTypes.buckets', response) || {};
 
     console.log('response:', JSON.stringify(response));
     return {
-      hostAuditbeatCount: get('firstSeen.value_as_string', aggregations),
-      hostWinlogbeatsCount: get('lastSeen.value_as_string', aggregations),
-      hostFilebeatsCount: get('lastSeen.value_as_string', aggregations),
+      hostAuditbeatCount: get(0, aggregations),
+      hostWinlogbeatsCount: get(1, aggregations),
+      hostFilebeatsCount: get(2, aggregations),
     };
   }
 }

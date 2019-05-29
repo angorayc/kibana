@@ -8,43 +8,41 @@ import { EuiIcon, EuiLoadingSpinner, EuiText, EuiToolTip } from '@elastic/eui';
 // import moment from 'moment';
 import React from 'react';
 import { ApolloConsumer } from 'react-apollo';
-import { pure } from 'recompose';
+import { Refetch } from '../../../../store/inputs/model';
 import { useAgentTypesHostQuery } from '../../../../containers/hosts/agent_types';
-import { TimerangeInput } from '../../../../graphql/types';
 
 // import { getEmptyTagValue } from '../../../empty_value';
 // import { PreferenceFormattedDate } from '../../../formatted_date';
 // import { LocalizedDateTooltip } from '../../../localized_date_tooltip';
 
-export enum AgentTypesHostType {
-  FIRST_SEEN = 'first-seen',
-  LAST_SEEN = 'last-seen',
-}
-
-export const AgentTypesHost = pure<{
-  loading: boolean;
-  hostname: string;
-  timerange: TimerangeInput;
-}>(({ hostname, type }) => {
+export const AgentTypesHost = React.memo<{
+  endDate: number;
+  startDate: number;
+  setQuery: {
+    id: string;
+    loading: boolean;
+    refresh: Refetch;
+  };
+}>(({ endDate, startDate, setQuery }) => {
   return (
     <ApolloConsumer>
       {client => {
-        const { loading, timerange, errorMessage } = useAgentTypesHostQuery(
-          hostname,
+        const { auditbeatCount, errorMessage } = useAgentTypesHostQuery(
           'default',
-          timerange,
+          startDate,
+          endDate,
           client
         );
         if (errorMessage != null) {
           return (
             <EuiToolTip
               position="top"
-              content={errorMessage}
-              data-test-subj="agentTypesErrorToolTip"
-              aria-label={`agentTypesError-${type}`}
-              id={`agentTypesError-${hostname}-${type}`}
+              content={auditbeatCount}
+              data-test-subj="agentTypesBeatsAnalyticToolTip"
+              aria-label={`agentTypesBeatsAnalyticToolTip`}
+              id={`agentTypesBeatsAnalyticToolTip`}
             >
-              <EuiIcon aria-describedby={`agentTypesError-${hostname}-${type}`} type="alert" />
+              <EuiIcon aria-describedby={`agentTypesBeatsAnalyticToolTip`} type="alert" />
             </EuiToolTip>
           );
         }

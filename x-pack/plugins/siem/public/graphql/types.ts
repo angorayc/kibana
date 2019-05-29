@@ -1791,8 +1791,6 @@ export interface HostFirstLastSeenSourceArgs {
 export interface HostAgentTypesSourceArgs {
   id?: string | null;
 
-  hostName: string;
-
   timerange: TimerangeInput;
 
   defaultIndex: string[];
@@ -2559,7 +2557,6 @@ export namespace GetLastEventTimeQuery {
 export namespace GetHostAgentTypesQuery {
   export type Variables = {
     sourceId: string;
-    hostName: string;
     timerange: TimerangeInput;
     defaultIndex: string[];
   };

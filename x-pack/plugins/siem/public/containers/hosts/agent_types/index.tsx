@@ -10,17 +10,17 @@ import chrome from 'ui/chrome';
 import { get } from 'lodash/fp';
 import { DEFAULT_INDEX_KEY } from '../../../../common/constants';
 import { HostAgentTypesGqlQuery } from './agent_types.gql_query';
-import { GetHostAgentTypesQuery, TimerangeInput } from '../../../graphql/types';
+import { GetHostAgentTypesQuery } from '../../../graphql/types';
 
 export function useAgentTypesHostQuery<TCache = object>(
-  hostName: string,
+  // hostName: string,
   sourceId: string,
-  timerange: TimerangeInput,
+  startDate: number,
+  endDate: number,
   apolloClient: ApolloClient<TCache>
 ) {
   const [loading, updateLoading] = useState(false);
-  const [firstSeen, updateFirstSeen] = useState(null);
-  const [lastSeen, updateLastSeen] = useState(null);
+  const [auditbeatCount, updateAuditbeatCount] = useState(null);
   const [errorMessage, updateErrorMessage] = useState(null);
 
   async function fetchAgentTypes() {
@@ -31,16 +31,19 @@ export function useAgentTypesHostQuery<TCache = object>(
         fetchPolicy: 'cache-first',
         variables: {
           sourceId,
-          hostName,
-          timerange,
+          // hostName,
+          timerange: {
+            interval: '12h',
+            from: startDate,
+            to: endDate,
+          },
           defaultIndex: chrome.getUiSettingsClient().get(DEFAULT_INDEX_KEY),
         },
       })
       .then(
         result => {
           updateLoading(false);
-          updateFirstSeen(get('data.source.HostFirstLastSeen.firstSeen', result));
-          updateLastSeen(get('data.source.HostFirstLastSeen.lastSeen', result));
+          updateAuditbeatCount(get('data.source.HostFirstLastSeen.firstSeen', result));
           updateErrorMessage(null);
           return result;
         },
@@ -56,11 +59,10 @@ export function useAgentTypesHostQuery<TCache = object>(
     try {
       fetchAgentTypes();
     } catch (err) {
-      updateFirstSeen(null);
-      updateLastSeen(null);
+      updateAuditbeatCount(null);
       updateErrorMessage(err.toString());
     }
   }, []);
 
-  return { firstSeen, lastSeen, loading, errorMessage };
+  return { auditbeatCount, loading, errorMessage };
 }

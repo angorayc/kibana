@@ -8,7 +8,7 @@ import { HostAgentTypesRequestOptions } from './types';
 
 export const buildHostAgentTypesQuery = ({
   fields,
-  hostName,
+  // hostName,
   defaultIndex,
   sourceConfiguration: {
     fields: { timestamp },
@@ -16,7 +16,7 @@ export const buildHostAgentTypesQuery = ({
   timerange: { from, to },
 }: HostAgentTypesRequestOptions) => {
   const filter = [
-    { term: { 'host.name': hostName } },
+    // { term: { 'host.name': hostName } },
     {
       range: {
         [timestamp]: {
@@ -25,7 +25,6 @@ export const buildHostAgentTypesQuery = ({
         },
       },
     },
-    { exists: { field: 'agent.type' } },
   ];
 
   const dslQuery = {
@@ -34,7 +33,14 @@ export const buildHostAgentTypesQuery = ({
     ignoreUnavailable: true,
     body: {
       aggregations: {
-        agentTypes: { terms: { field: 'agent.type' } },
+        agentTypes: {
+          terms: {
+            field: 'agent.type',
+            order: {
+              _key: 'desc',
+            },
+          },
+        },
       },
       query: { bool: { filter } },
       size: 0,
