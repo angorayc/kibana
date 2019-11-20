@@ -12,7 +12,6 @@ import { scoreIntervalToDateTime } from '../../components/ml/score/score_interva
 import { Anomaly } from '../../components/ml/types';
 import { HostsTableType } from '../../store/hosts/model';
 import { AnomaliesQueryTabBody } from '../../containers/anomalies/anomalies_query_tab_body';
-import { AnomaliesHostTable } from '../../components/ml/tables/anomalies_host_table';
 
 import {
   HostsQueryTabBody,
@@ -20,6 +19,7 @@ import {
   UncommonProcessQueryTabBody,
   EventsQueryTabBody,
 } from './navigation';
+import { SiemPageName } from '../home/types';
 
 const HostsTabs = memo<HostsTabsProps>(
   ({
@@ -56,6 +56,11 @@ const HostsTabs = memo<HostsTabsProps>(
       },
     };
 
+    const anomaliesTabPrpos = {
+      ...tabProps,
+      page: SiemPageName.hosts,
+    };
+
     return (
       <Switch>
         <Route
@@ -72,9 +77,7 @@ const HostsTabs = memo<HostsTabsProps>(
         />
         <Route
           path={`${hostsPagePath}/:tabName(${HostsTableType.anomalies})`}
-          render={() => (
-            <AnomaliesQueryTabBody {...tabProps} AnomaliesTableComponent={AnomaliesHostTable} />
-          )}
+          render={() => <AnomaliesQueryTabBody {...anomaliesTabPrpos} />}
         />
         <Route
           path={`${hostsPagePath}/:tabName(${HostsTableType.events})`}

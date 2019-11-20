@@ -15,7 +15,6 @@ import { LastEventTime } from '../../../components/last_event_time';
 import { AnomalyTableProvider } from '../../../components/ml/anomaly/anomaly_table_provider';
 import { networkToCriteria } from '../../../components/ml/criteria/network_to_criteria';
 import { scoreIntervalToDateTime } from '../../../components/ml/score/score_interval_to_datetime';
-import { AnomaliesNetworkTable } from '../../../components/ml/tables/anomalies_network_table';
 import { manageQuery } from '../../../components/page/manage_query';
 import { FlowTargetSelectConnected } from '../../../components/page/network/flow_target_select_connected';
 import { IpOverview } from '../../../components/page/network/ip_overview';
@@ -41,6 +40,7 @@ import { IPDetailsComponentProps } from './types';
 import { UsersQueryTable } from './users_query_table';
 import { AnomaliesQueryTabBody } from '../../../containers/anomalies/anomalies_query_tab_body';
 import { esQuery } from '../../../../../../../../src/plugins/data/public';
+import { SiemPageName } from '../../home/types';
 
 export { getBreadcrumbs } from './utils';
 
@@ -264,7 +264,7 @@ export const IPDetailsComponent = React.memo<IPDetailsComponentProps>(
                     flowTarget={flowTarget}
                     narrowDateRange={narrowDateRange}
                     hideHistogramIfEmpty={true}
-                    AnomaliesTableComponent={AnomaliesNetworkTable}
+                    page={SiemPageName.network}
                   />
                 </WrapperPage>
               </StickyContainer>

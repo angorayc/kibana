@@ -5,41 +5,29 @@
  */
 
 import { ESTermQuery } from '../../../../common/typed_json';
-import { NarrowDateRange, HostOrNetworkProps } from '../../../components/ml/types';
+import { NarrowDateRange } from '../../../components/ml/types';
 import { UpdateDateRange } from '../../../components/charts/common';
 import { SetQuery } from '../../../pages/hosts/navigation/types';
 import { FlowTarget } from '../../../graphql/types';
 import { HostsType } from '../../../store/hosts/model';
 import { NetworkType } from '../../../store/network/model';
+import { SiemPageName } from '../../../pages/home/types';
 
 interface QueryTabBodyProps {
   type: HostsType | NetworkType;
   filterQuery?: string | ESTermQuery;
 }
 
-type HostOrNetworkType =
-  | HostsType.page
-  | HostsType.details
-  | NetworkType.page
-  | NetworkType.details;
-
 export type AnomaliesQueryTabBodyProps = QueryTabBodyProps & {
-  startDate: number;
-  endDate: number;
-  skip: boolean;
-  setQuery: SetQuery;
-  narrowDateRange: NarrowDateRange;
-  updateDateRange?: UpdateDateRange;
   anomaliesFilterQuery?: object;
+  endDate: number;
+  flowTarget?: FlowTarget;
   hideHistogramIfEmpty?: boolean;
   ip?: string;
-  flowTarget?: FlowTarget;
-  AnomaliesTableComponent: (
-    props: HostOrNetworkProps & {
-      hostName?: string;
-      type: HostOrNetworkType;
-      ip?: string;
-      flowTarget?: FlowTarget;
-    }
-  ) => JSX.Element | null;
+  narrowDateRange: NarrowDateRange;
+  page: SiemPageName;
+  setQuery: SetQuery;
+  skip: boolean;
+  startDate: number;
+  updateDateRange?: UpdateDateRange;
 };

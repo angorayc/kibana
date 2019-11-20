@@ -15,11 +15,11 @@ import { IPsQueryTabBody } from './ips_query_tab_body';
 import { CountriesQueryTabBody } from './countries_query_tab_body';
 import { HttpQueryTabBody } from './http_query_tab_body';
 import { AnomaliesQueryTabBody } from '../../../containers/anomalies/anomalies_query_tab_body';
-import { AnomaliesNetworkTable } from '../../../components/ml/tables/anomalies_network_table';
 import { DnsQueryTabBody } from './dns_query_tab_body';
 import { ConditionalFlexGroup } from './conditional_flex_group';
 import { NetworkRoutesProps, NetworkRouteType } from './types';
 import { TlsQueryTabBody } from './tls_query_tab_body';
+import { SiemPageName } from '../../home/types';
 
 export const NetworkRoutes = ({
   networkPagePath,
@@ -80,7 +80,7 @@ export const NetworkRoutes = ({
   const anomaliesProps = {
     ...commonProps,
     anomaliesFilterQuery: networkAnomaliesFilterQuery,
-    AnomaliesTableComponent: AnomaliesNetworkTable,
+    page: SiemPageName.network,
   };
 
   return (
@@ -128,12 +128,7 @@ export const NetworkRoutes = ({
       />
       <Route
         path={`${networkPagePath}/:tabName(${NetworkRouteType.anomalies})`}
-        render={() => (
-          <AnomaliesQueryTabBody
-            {...anomaliesProps}
-            AnomaliesTableComponent={AnomaliesNetworkTable}
-          />
-        )}
+        render={() => <AnomaliesQueryTabBody {...anomaliesProps} />}
       />
     </Switch>
   );
