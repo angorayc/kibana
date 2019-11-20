@@ -5,19 +5,23 @@
  */
 
 import { ESTermQuery } from '../../../../common/typed_json';
-import { NarrowDateRange } from '../../../components/ml/types';
+import { NarrowDateRange, HostOrNetworkProps } from '../../../components/ml/types';
 import { UpdateDateRange } from '../../../components/charts/common';
 import { SetQuery } from '../../../pages/hosts/navigation/types';
 import { FlowTarget } from '../../../graphql/types';
 import { HostsType } from '../../../store/hosts/model';
 import { NetworkType } from '../../../store/network/model';
-import { AnomaliesHostTable } from '../../../components/ml/tables/anomalies_host_table';
-import { AnomaliesNetworkTable } from '../../../components/ml/tables/anomalies_network_table';
 
 interface QueryTabBodyProps {
   type: HostsType | NetworkType;
   filterQuery?: string | ESTermQuery;
 }
+
+type HostOrNetworkType =
+  | HostsType.page
+  | HostsType.details
+  | NetworkType.page
+  | NetworkType.details;
 
 export type AnomaliesQueryTabBodyProps = QueryTabBodyProps & {
   startDate: number;
@@ -30,5 +34,12 @@ export type AnomaliesQueryTabBodyProps = QueryTabBodyProps & {
   hideHistogramIfEmpty?: boolean;
   ip?: string;
   flowTarget?: FlowTarget;
-  AnomaliesTableComponent: typeof AnomaliesHostTable | typeof AnomaliesNetworkTable;
+  AnomaliesTableComponent: (
+    props: HostOrNetworkProps & {
+      hostName?: string;
+      type: HostOrNetworkType;
+      ip?: string;
+      flowTarget?: FlowTarget;
+    }
+  ) => JSX.Element | null;
 };
