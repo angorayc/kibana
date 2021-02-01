@@ -210,6 +210,10 @@ export const ZERO_TIMELINES_MATCH = i18n.translate(
   }
 );
 
+export const LOADING = i18n.translate('xpack.securitySolution.open.timeline.loadingLabel', {
+  defaultMessage: 'Loading...',
+});
+
 export const SINGLE_TIMELINE = i18n.translate(
   'xpack.securitySolution.open.timeline.singleTimelineLabel',
   {
