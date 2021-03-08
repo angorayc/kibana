@@ -31,6 +31,10 @@ const Container = styled.div`
 const StyledFlyout = styled(EuiFlyout)`
   ${({ theme }) => `
     z-index: ${theme.eui.euiZModal};
+
+    .euiFlyoutBody .euiFlyoutBody__overflowContent {
+      padding: 24px;
+    }
   `}
 `;
 
