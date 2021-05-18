@@ -7,7 +7,7 @@
 import Boom from '@hapi/boom';
 
 import { KibanaRequest } from 'src/core/server';
-import { EventType, SecurityPluginStart } from '../../../security/server';
+import { SecurityPluginStart } from '../../../security/server';
 import { PluginStartContract as FeaturesPluginStart } from '../../../features/server';
 import { Space } from '../../../spaces/server';
 import { KueryNode } from '../../../../../src/plugins/data/server';
@@ -118,7 +118,7 @@ export class RacAuthorization {
             owner,
             username,
             operation,
-            type: EventType.ACCESS,
+            type: 'access',
           })
         );
       }
@@ -127,7 +127,7 @@ export class RacAuthorization {
           owner,
           username,
           operation,
-          type: EventType.ACCESS,
+          type: 'access',
         });
       } else {
         const authorizedPrivileges = privileges.kibana.reduce<string[]>((acc, privilege) => {
@@ -145,7 +145,7 @@ export class RacAuthorization {
             owner: unauthorizedPrivilages.join(','),
             username,
             operation,
-            type: EventType.ACCESS,
+            type: 'access',
           })
         );
       }
@@ -155,7 +155,7 @@ export class RacAuthorization {
           owner,
           username: '',
           operation,
-          type: EventType.ACCESS,
+          type: 'access',
         })
       );
     }

@@ -138,7 +138,7 @@ export class RacClient {
 
       try {
         const result = await this.esClient.get({
-          index: '.siem-signals-devin-hurley-default',
+          index: '.siem-signals-angelachuang',
           id,
         });
         console.error(`************\nRESULT ${JSON.stringify(result, null, 2)}\n************`);

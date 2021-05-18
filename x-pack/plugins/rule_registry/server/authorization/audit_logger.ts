@@ -4,8 +4,9 @@
  * 2.0; you may not use this file except in compliance with the Elastic License
  * 2.0.
  */
+import type { EcsEventType } from 'src/core/server';
 
-import { AuditLogger, EventCategory, EventOutcome, EventType } from '../../../security/server';
+import { AuditLogger } from '../../../security/server';
 
 export enum AuthorizationResult {
   Unauthorized = 'Unauthorized',
@@ -37,7 +38,7 @@ export class RacAuthorizationAuditLogger {
     username: string;
     owner: string;
     operation: string;
-    type: EventType;
+    type: EcsEventType;
     error?: Error;
   }): string {
     const message = this.getAuthorizationMessage(
@@ -49,9 +50,9 @@ export class RacAuthorizationAuditLogger {
       message,
       event: {
         action: 'rac_authorization_failure',
-        category: EventCategory.DATABASE,
-        type,
-        outcome: EventOutcome.FAILURE,
+        category: ['database'],
+        type: [type],
+        outcome: 'failure',
       },
       user: {
         name: username,
@@ -71,16 +72,16 @@ export class RacAuthorizationAuditLogger {
   }: {
     username: string;
     operation: string;
-    type: EventType;
+    type: EcsEventType;
   }): string {
     const message = `Unauthorized to ${operation} any alerts`;
     this.auditLogger.log({
       message,
       event: {
         action: 'rac_authorization_failure',
-        category: EventCategory.DATABASE,
-        type,
-        outcome: EventOutcome.FAILURE,
+        category: ['database'],
+        type: [type],
+        outcome: 'failure',
       },
       user: {
         name: username,
@@ -98,16 +99,16 @@ export class RacAuthorizationAuditLogger {
     username: string;
     owner: string;
     operation: string;
-    type: EventType;
+    type: EcsEventType;
   }): string {
     const message = this.getAuthorizationMessage(AuthorizationResult.Authorized, owner, operation);
     this.auditLogger.log({
       message,
       event: {
         action: 'rac_authorization_success',
-        category: EventCategory.DATABASE,
-        type,
-        outcome: EventOutcome.SUCCESS,
+        category: ['database'],
+        type: [type],
+        outcome: 'success',
       },
       user: {
         name: username,
