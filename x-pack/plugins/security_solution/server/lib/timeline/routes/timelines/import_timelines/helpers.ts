@@ -62,6 +62,7 @@ export const timelineSavedObjectOmittedFields = [
   'updated',
   'updatedBy',
   'version',
+  'indexNames',
 ];
 
 export const setTimeline = (

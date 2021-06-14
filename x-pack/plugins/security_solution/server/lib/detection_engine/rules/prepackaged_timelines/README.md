@@ -46,6 +46,8 @@
 
 	- status: `immutable`
 
+  - indexNames: []
+
 
 
 3.  ```cd x-pack/plugins/security_solution/server/lib/detection_engine/scripts```
