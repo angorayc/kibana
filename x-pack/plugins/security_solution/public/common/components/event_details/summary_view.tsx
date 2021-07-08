@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { EuiInMemoryTable, EuiBasicTableColumn, EuiTitle, EuiText } from '@elastic/eui';
+import { EuiInMemoryTable, EuiBasicTableColumn, EuiTitle } from '@elastic/eui';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -18,9 +18,6 @@ export const StyledEuiInMemoryTable = styled(EuiInMemoryTable as any)`
   }
   .euiTableRowCell {
     border: none;
-    .euiTitle--xxsmall {
-      font-size: 12px;
-    }
   }
 `;
 
@@ -29,11 +26,11 @@ export const SummaryViewComponent: React.FC<{
   summaryColumns: Array<EuiBasicTableColumn<SummaryRow>>;
   summaryRows: SummaryRow[];
   dataTestSubj?: string;
-}> = ({ summaryColumns, summaryRows, dataTestSubj = 'summary-view', title, subTitle }) => {
+}> = ({ summaryColumns, summaryRows, dataTestSubj = 'summary-view', title }) => {
   return (
     <>
       {title && (
-        <EuiTitle size="xxxs">
+        <EuiTitle size="xxs">
           <h6>{title}</h6>
         </EuiTitle>
       )}
