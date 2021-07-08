@@ -131,7 +131,7 @@ const EventDetailsComponent: React.FC<Props> = ({
       isAlert
         ? {
             id: EventsViewType.summaryView,
-            name: i18n.SUMMARY,
+            name: i18n.OVERVIEW,
             content: (
               <>
                 <AlertSummaryView
@@ -140,7 +140,7 @@ const EventDetailsComponent: React.FC<Props> = ({
                     eventId: id,
                     browserFields,
                     timelineId,
-                    title: i18n.ALERT_SUMMARY,
+                    title: i18n.DUCOMENT_SUMMARY,
                   }}
                 />
                 {enrichmentsLoading && (
