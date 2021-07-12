@@ -214,7 +214,7 @@ const AlertSummaryViewComponent: React.FC<{
 
   return (
     <>
-      <EuiSpacer size="l" />
+      <EuiSpacer size="m" />
       <SummaryView
         summaryColumns={summaryColumns}
         summaryRows={isEndpointAlert ? summaryRowsWithAgentStatus : summaryRows}
