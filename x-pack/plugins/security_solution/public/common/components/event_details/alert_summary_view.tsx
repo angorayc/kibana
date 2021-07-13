@@ -12,9 +12,11 @@ import {
   EuiDescriptionListTitle,
   EuiSpacer,
   EuiHorizontalRule,
+  EuiFlexItem,
+  EuiTitle,
 } from '@elastic/eui';
 import { get, getOr, find } from 'lodash/fp';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 import * as i18n from './translations';
@@ -28,6 +30,8 @@ import {
   ALERTS_HEADERS_THRESHOLD_CARDINALITY,
   ALERTS_HEADERS_THRESHOLD_COUNT,
   ALERTS_HEADERS_THRESHOLD_TERMS,
+  SIGNAL_STATUS,
+  TIMESTAMP,
 } from '../../../detections/components/alerts_table/translations';
 import {
   IP_FIELD_TYPE,
@@ -40,15 +44,27 @@ import { useRuleWithFallback } from '../../../detections/containers/detection_en
 import { MarkdownRenderer } from '../markdown_editor';
 import { LineClamp } from '../line_clamp';
 import { endpointAlertCheck } from '../../utils/endpoint_alert_check';
+import { useKibana } from '../../lib/kibana';
+import { APP_ID, SecurityPageName } from '../../../../common/constants';
+import { getRuleDetailsUrl, useFormatUrl } from '../link_to';
+import { LinkAnchor } from '../links';
+import {
+  REASON,
+  VIEW_RULE_DETAILS_PAGE,
+} from '../../../timelines/components/side_panel/event_details/translations';
 
 const StyledEuiDescriptionList = styled(EuiDescriptionList)`
   padding: 24px 4px 4px;
   word-break: break-word;
 `;
 
+const ReasonBlock = styled.div`
+  padding: 0 8px;
+`;
+
 const fields = [
-  { id: 'signal.status' },
-  { id: '@timestamp' },
+  { id: 'signal.status', label: SIGNAL_STATUS },
+  { id: '@timestamp', label: TIMESTAMP },
   {
     id: SIGNAL_RULE_NAME_FIELD_NAME,
     linkField: 'signal.rule.id',
@@ -64,6 +80,20 @@ const fields = [
   { id: 'signal.threshold_result.count', label: ALERTS_HEADERS_THRESHOLD_COUNT },
   { id: 'signal.threshold_result.terms', label: ALERTS_HEADERS_THRESHOLD_TERMS },
   { id: 'signal.threshold_result.cardinality', label: ALERTS_HEADERS_THRESHOLD_CARDINALITY },
+];
+
+const processFields = [
+  ...fields,
+  { id: 'process.name' },
+  { id: 'process.parent.name' },
+  { id: 'process.args' },
+];
+
+const networkFields = [
+  ...fields,
+  { id: 'destination.address' },
+  { id: 'destination.port' },
+  { id: 'process.name' },
 ];
 
 const getDescription = ({
@@ -95,8 +125,22 @@ const getSummaryRows = ({
   timelineId: string;
   eventId: string;
 }) => {
-  return data != null
-    ? fields.reduce<SummaryRow[]>((acc, item) => {
+  const categoryField = find({ category: 'event', field: 'event.category' }, data) as
+    | TimelineEventsDetailsItem
+    | undefined;
+  const eventCategory = Array.isArray(categoryField?.originalValue)
+    ? categoryField?.originalValue[0]
+    : categoryField?.originalValue;
+
+  const tableFields =
+    eventCategory === 'network'
+      ? networkFields
+      : eventCategory === 'process'
+      ? processFields
+      : fields;
+
+  return tableFields != null
+    ? tableFields.reduce<SummaryRow[]>((acc, item) => {
         const field = data.find((d) => d.field === item.id);
         if (!field) {
           return acc;
@@ -210,11 +254,49 @@ const AlertSummaryViewComponent: React.FC<{
       ? item?.originalValue[0]
       : item?.originalValue ?? null;
   }, [data]);
-  const { rule: maybeRule } = useRuleWithFallback(ruleId);
 
+  const reason = useMemo(() => {
+    const item = data.find((d) => d.field === 'event.reason');
+    return Array.isArray(item?.originalValue)
+      ? item?.originalValue[0]
+      : item?.originalValue ?? null;
+  }, [data]);
+  const { rule: maybeRule } = useRuleWithFallback(ruleId);
+  const { navigateToApp } = useKibana().services.application;
+  const { formatUrl } = useFormatUrl(SecurityPageName.rules);
+  const goToRuleDetailsPage = useCallback(
+    (ev: { preventDefault: () => void }) => {
+      ev.preventDefault();
+      navigateToApp(APP_ID, {
+        deepLinkId: SecurityPageName.rules,
+        path: getRuleDetailsUrl(ruleId),
+      });
+    },
+    [navigateToApp, ruleId]
+  );
   return (
     <>
       <EuiSpacer size="m" />
+      {reason && (
+        <EuiFlexItem grow={false}>
+          <EuiTitle size="xxs">
+            <h6>{REASON}</h6>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+          <ReasonBlock>
+            <h6>{reason}</h6>
+            <EuiSpacer size="s" />
+            <LinkAnchor
+              data-test-subj="ruleName"
+              onClick={goToRuleDetailsPage}
+              href={formatUrl(getRuleDetailsUrl(ruleId))}
+            >
+              {VIEW_RULE_DETAILS_PAGE}
+            </LinkAnchor>
+          </ReasonBlock>
+          <EuiHorizontalRule />
+        </EuiFlexItem>
+      )}
       <SummaryView
         summaryColumns={summaryColumns}
         summaryRows={isEndpointAlert ? summaryRowsWithAgentStatus : summaryRows}

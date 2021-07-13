@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { EuiInMemoryTable, EuiBasicTableColumn, EuiTitle } from '@elastic/eui';
+import { EuiInMemoryTable, EuiBasicTableColumn, EuiTitle, EuiSpacer } from '@elastic/eui';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -13,6 +13,7 @@ import { SummaryRow } from './helpers';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const StyledEuiInMemoryTable = styled(EuiInMemoryTable as any)`
+  padding: 0 8px;
   .euiTableHeaderCell,
   .euiTableRowCell {
     border: none;
@@ -31,15 +32,18 @@ export const SummaryViewComponent: React.FC<{
   return (
     <>
       {title && (
-        <EuiTitle size="xxs">
-          <h6>{title}</h6>
-        </EuiTitle>
+        <>
+          <EuiTitle size="xxs">
+            <h6>{title}</h6>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+        </>
       )}
       <StyledEuiInMemoryTable
         data-test-subj={dataTestSubj}
         items={summaryRows}
         columns={summaryColumns}
-        compressed={true}
+        compressed
       />
     </>
   );
