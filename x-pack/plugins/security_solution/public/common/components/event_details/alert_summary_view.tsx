@@ -5,15 +5,9 @@
  * 2.0.
  */
 
-import {
-  EuiBasicTableColumn,
-  EuiSpacer,
-  EuiHorizontalRule,
-  EuiFlexItem,
-  EuiTitle,
-} from '@elastic/eui';
+import { EuiBasicTableColumn, EuiSpacer, EuiHorizontalRule, EuiTitle } from '@elastic/eui';
 import { get, getOr, find } from 'lodash/fp';
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 import * as i18n from './translations';
@@ -41,14 +35,6 @@ import { useRuleWithFallback } from '../../../detections/containers/detection_en
 import { MarkdownRenderer } from '../markdown_editor';
 import { LineClamp } from '../line_clamp';
 import { endpointAlertCheck } from '../../utils/endpoint_alert_check';
-import { useKibana } from '../../lib/kibana';
-import { APP_ID, SecurityPageName } from '../../../../common/constants';
-import { getRuleDetailsUrl, useFormatUrl } from '../link_to';
-import { LinkAnchor } from '../links';
-import {
-  REASON,
-  VIEW_RULE_DETAILS_PAGE,
-} from '../../../timelines/components/side_panel/event_details/translations';
 
 const StyledText = styled.div`
   padding: 0 8px;
@@ -248,49 +234,11 @@ const AlertSummaryViewComponent: React.FC<{
       : item?.originalValue ?? null;
   }, [data]);
 
-  const reason = useMemo(() => {
-    const item = data.find((d) => d.field === 'event.reason');
-    return Array.isArray(item?.originalValue)
-      ? item?.originalValue[0]
-      : item?.originalValue ?? null;
-  }, [data]);
-
   const { rule: maybeRule } = useRuleWithFallback(ruleId);
-  const { navigateToApp } = useKibana().services.application;
-  const { formatUrl } = useFormatUrl(SecurityPageName.rules);
-  const goToRuleDetailsPage = useCallback(
-    (ev: { preventDefault: () => void }) => {
-      ev.preventDefault();
-      navigateToApp(APP_ID, {
-        deepLinkId: SecurityPageName.rules,
-        path: getRuleDetailsUrl(ruleId),
-      });
-    },
-    [navigateToApp, ruleId]
-  );
+
   return (
     <>
       <EuiSpacer size="m" />
-      {reason && (
-        <EuiFlexItem grow={false}>
-          <EuiTitle size="xxs">
-            <h6>{REASON}</h6>
-          </EuiTitle>
-          <EuiSpacer size="s" />
-          <StyledText>
-            <h6>{reason}</h6>
-            <EuiSpacer size="s" />
-            <LinkAnchor
-              data-test-subj="ruleName"
-              onClick={goToRuleDetailsPage}
-              href={formatUrl(getRuleDetailsUrl(ruleId))}
-            >
-              {VIEW_RULE_DETAILS_PAGE}
-            </LinkAnchor>
-          </StyledText>
-          <EuiHorizontalRule />
-        </EuiFlexItem>
-      )}
       <SummaryView
         summaryColumns={summaryColumns}
         summaryRows={isEndpointAlert ? summaryRowsWithAgentStatus : summaryRows}
