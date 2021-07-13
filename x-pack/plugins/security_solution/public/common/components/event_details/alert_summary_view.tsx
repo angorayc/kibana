@@ -7,9 +7,6 @@
 
 import {
   EuiBasicTableColumn,
-  EuiDescriptionList,
-  EuiDescriptionListDescription,
-  EuiDescriptionListTitle,
   EuiSpacer,
   EuiHorizontalRule,
   EuiFlexItem,
@@ -53,13 +50,9 @@ import {
   VIEW_RULE_DETAILS_PAGE,
 } from '../../../timelines/components/side_panel/event_details/translations';
 
-const StyledEuiDescriptionList = styled(EuiDescriptionList)`
-  padding: 24px 4px 4px;
-  word-break: break-word;
-`;
-
-const ReasonBlock = styled.div`
+const StyledText = styled.div`
   padding: 0 8px;
+  word-break: break-word;
 `;
 
 const fields = [
@@ -261,6 +254,7 @@ const AlertSummaryViewComponent: React.FC<{
       ? item?.originalValue[0]
       : item?.originalValue ?? null;
   }, [data]);
+
   const { rule: maybeRule } = useRuleWithFallback(ruleId);
   const { navigateToApp } = useKibana().services.application;
   const { formatUrl } = useFormatUrl(SecurityPageName.rules);
@@ -283,7 +277,7 @@ const AlertSummaryViewComponent: React.FC<{
             <h6>{REASON}</h6>
           </EuiTitle>
           <EuiSpacer size="s" />
-          <ReasonBlock>
+          <StyledText>
             <h6>{reason}</h6>
             <EuiSpacer size="s" />
             <LinkAnchor
@@ -293,7 +287,7 @@ const AlertSummaryViewComponent: React.FC<{
             >
               {VIEW_RULE_DETAILS_PAGE}
             </LinkAnchor>
-          </ReasonBlock>
+          </StyledText>
           <EuiHorizontalRule />
         </EuiFlexItem>
       )}
@@ -305,14 +299,15 @@ const AlertSummaryViewComponent: React.FC<{
       {maybeRule?.note && (
         <>
           <EuiHorizontalRule />
-          <StyledEuiDescriptionList data-test-subj={`summary-view-guide`} compressed>
-            <EuiDescriptionListTitle>{i18n.INVESTIGATION_GUIDE}</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              <LineClamp>
-                <MarkdownRenderer>{maybeRule.note}</MarkdownRenderer>
-              </LineClamp>
-            </EuiDescriptionListDescription>
-          </StyledEuiDescriptionList>
+          <EuiTitle size="xxs" data-test-subj="summary-view-guide">
+            <h6>{i18n.INVESTIGATION_GUIDE}</h6>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+          <StyledText>
+            <LineClamp>
+              <MarkdownRenderer>{maybeRule.note}</MarkdownRenderer>
+            </LineClamp>
+          </StyledText>
         </>
       )}
     </>
