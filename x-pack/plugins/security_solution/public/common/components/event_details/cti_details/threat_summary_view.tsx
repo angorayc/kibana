@@ -40,7 +40,7 @@ const EnrichmentTitle: React.FC<ThreatSummaryItem['title']> = ({ title, type }) 
     <RightMargin>
       <EnrichmentIcon type={type} />
     </RightMargin>
-    <EuiTitle size="xxs">
+    <EuiTitle size="xxxs">
       <h5>{title}</h5>
     </EuiTitle>
   </>
