@@ -7,7 +7,7 @@
 
 import { EuiBasicTableColumn, EuiSpacer, EuiHorizontalRule, EuiTitle, EuiText } from '@elastic/eui';
 import { get, getOr, find } from 'lodash/fp';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import * as i18n from './translations';
@@ -35,6 +35,8 @@ import { useRuleWithFallback } from '../../../detections/containers/detection_en
 import { MarkdownRenderer } from '../markdown_editor';
 import { LineClamp } from '../line_clamp';
 import { endpointAlertCheck } from '../../utils/endpoint_alert_check';
+import { HoverActions } from '../hover_actions';
+import { useGetTimelineId } from '../drag_and_drop/draggable_wrapper_hover_content';
 
 export const Indent = styled.div`
   padding: 0 8px;
@@ -75,23 +77,77 @@ const networkFields = [
   { id: 'process.name' },
 ];
 
-const getDescription = ({
+const DescriptionComponent: React.FC<AlertSummaryRow['description']> = ({
   contextId,
   eventId,
   fieldName,
   value,
   fieldType = '',
   linkValue,
-}: AlertSummaryRow['description']) => (
-  <FormattedFieldValue
-    contextId={`alert-details-value-formatted-field-value-${contextId}-${eventId}-${fieldName}-${value}`}
-    eventId={eventId}
-    fieldName={fieldName}
-    fieldType={fieldType}
-    value={value}
-    linkValue={linkValue}
-  />
-);
+}) => {
+  const keyboardHandlerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [goGetTimelineId, setGoGetTimelineId] = useState(false);
+
+  const timelineIdFind = useGetTimelineId(containerRef, goGetTimelineId);
+  const [showTopN, setShowTopN] = useState<boolean>(false);
+
+  const [, setClosePopOverTrigger] = useState<boolean>(false);
+  const [hoverActionsOwnFocus, setHoverActionsOwnFocus] = useState<boolean>(false);
+
+  const handleClosePopOverTrigger = useCallback(() => {
+    setClosePopOverTrigger((prevClosePopOverTrigger) => !prevClosePopOverTrigger);
+
+    setHoverActionsOwnFocus((prevHoverActionsOwnFocus) => {
+      if (prevHoverActionsOwnFocus) {
+        // on the next tick, re-focus the keyboard handler if the hover actions owned focus
+        setTimeout(() => {
+          keyboardHandlerRef.current?.focus();
+        }, 0);
+      }
+      return false; // always give up ownership
+    });
+
+    setTimeout(() => {
+      setHoverActionsOwnFocus(false);
+    }, 0); // invoked on the next tick, because we want to restore focus first
+  }, []);
+
+  const toggleTopN = useCallback(() => {
+    setShowTopN((prevShowTopN) => {
+      const newShowTopN = !prevShowTopN;
+      if (newShowTopN === false) {
+        handleClosePopOverTrigger();
+      }
+      return newShowTopN;
+    });
+  }, [handleClosePopOverTrigger]);
+  return (
+    <>
+      <FormattedFieldValue
+        contextId={`alert-details-value-formatted-field-value-${contextId}-${eventId}-${fieldName}-${value}`}
+        eventId={eventId}
+        fieldName={fieldName}
+        fieldType={fieldType}
+        value={value}
+        linkValue={linkValue}
+      />
+      <HoverActions
+        field={fieldName}
+        goGetTimelineId={setGoGetTimelineId}
+        isObjectArray={true}
+        ownFocus={hoverActionsOwnFocus}
+        showTopN={showTopN}
+        toggleTopN={toggleTopN}
+        timelineId={timelineIdFind}
+        value={value}
+        showPadding={false}
+      />
+    </>
+  );
+};
+
+const Description = React.memo(DescriptionComponent);
 
 const getSummaryRows = ({
   data,
@@ -188,6 +244,8 @@ const getSummaryRows = ({
       }, [])
     : [];
 };
+
+const getDescription = (props: AlertSummaryRow['description']) => <Description {...props} />;
 
 const summaryColumns: Array<EuiBasicTableColumn<SummaryRow>> = getSummaryColumns(getDescription);
 

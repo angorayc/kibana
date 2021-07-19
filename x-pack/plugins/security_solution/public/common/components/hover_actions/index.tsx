@@ -38,8 +38,9 @@ export const AdditionalContent = styled.div`
 
 AdditionalContent.displayName = 'AdditionalContent';
 
-const StyledHoverActionsContainer = styled.div<{ $showTopN: boolean }>`
-  padding: ${(props) => (props.$showTopN ? 'none' : props.theme.eui.paddingSizes.s)};
+const StyledHoverActionsContainer = styled.div<{ $showTopN: boolean; $showPadding?: boolean }>`
+  padding: ${({ theme, $showTopN, $showPadding = true }) =>
+    $showTopN || !$showPadding ? 'none' : theme.eui.paddingSizes.s};
 
   &:focus-within {
     .timelines__hoverActionButton,
@@ -79,6 +80,7 @@ interface Props {
   onFilterAdded?: () => void;
   ownFocus: boolean;
   showTopN: boolean;
+  showPadding?: boolean;
   timelineId?: string | null;
   toggleColumn?: (column: ColumnHeaderOptions) => void;
   toggleTopN: () => void;
@@ -111,6 +113,7 @@ export const HoverActions: React.FC<Props> = React.memo(
     onFilterAdded,
     ownFocus,
     showTopN,
+    showPadding,
     timelineId,
     toggleColumn,
     toggleTopN,
@@ -271,7 +274,12 @@ export const HoverActions: React.FC<Props> = React.memo(
     const showFilters = !showTopN && value != null;
 
     return (
-      <StyledHoverActionsContainer onKeyDown={onKeyDown} ref={panelRef} $showTopN={showTopN}>
+      <StyledHoverActionsContainer
+        onKeyDown={onKeyDown}
+        ref={panelRef}
+        $showTopN={showTopN}
+        $showPadding={showPadding}
+      >
         <EuiFocusTrap
           disabled={isFocusTrapDisabled({
             ownFocus,
