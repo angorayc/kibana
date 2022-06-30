@@ -6,15 +6,10 @@
  */
 import * as t from 'io-ts';
 import { Logger } from '@kbn/core/server';
-import { isoToEpochRt } from '@kbn/io-ts-utils';
 import { setupRequest, Setup } from '../../lib/helpers/setup_request';
-import { getClientMetrics } from './get_client_metrics';
-import { getLongTaskMetrics } from './get_long_task_metrics';
 import { getPageLoadDistribution } from './get_page_load_distribution';
 import { getPageViewTrends } from './get_page_view_trends';
 import { getPageLoadDistBreakdown } from './get_pl_dist_breakdown';
-import { getVisitorBreakdown } from './get_visitor_breakdown';
-import { hasRumData } from './has_rum_data';
 import { createApmServerRoute } from '../apm_routes/create_apm_server_route';
 import { rangeRt } from '../default_api_types';
 import { APMRouteHandlerResources } from '../typings';
@@ -58,36 +53,6 @@ const uxQueryRt = t.intersection([
   rangeRt,
   t.partial({ urlQuery: t.string, percentile: t.string }),
 ]);
-
-const rumClientMetricsRoute = createApmServerRoute({
-  endpoint: 'GET /internal/apm/ux/client-metrics',
-  params: t.type({
-    query: uxQueryRt,
-  }),
-  options: { tags: ['access:apm'] },
-  handler: async (
-    resources
-  ): Promise<{
-    pageViews: { value: number };
-    totalPageLoadDuration: { value: number };
-    backEnd: { value: number };
-    frontEnd: { value: number };
-  }> => {
-    const setup = await setupUXRequest(resources);
-
-    const {
-      query: { urlQuery, percentile, start, end },
-    } = resources.params;
-
-    return getClientMetrics({
-      setup,
-      urlQuery,
-      percentile: percentile ? Number(percentile) : undefined,
-      start,
-      end,
-    });
-  },
-});
 
 const rumPageLoadDistributionRoute = createApmServerRoute({
   endpoint: 'GET /internal/apm/ux/page-load-distribution',
@@ -186,87 +151,6 @@ const rumPageViewsTrendRoute = createApmServerRoute({
   },
 });
 
-const rumVisitorsBreakdownRoute = createApmServerRoute({
-  endpoint: 'GET /internal/apm/ux/visitor-breakdown',
-  params: t.type({
-    query: uxQueryRt,
-  }),
-  options: { tags: ['access:apm'] },
-  handler: async (
-    resources
-  ): Promise<{
-    os: Array<{ count: number; name: string }>;
-    browsers: Array<{ count: number; name: string }>;
-  }> => {
-    const setup = await setupUXRequest(resources);
-
-    const {
-      query: { urlQuery, start, end },
-    } = resources.params;
-
-    return getVisitorBreakdown({
-      setup,
-      urlQuery,
-      start,
-      end,
-    });
-  },
-});
-
-const rumLongTaskMetrics = createApmServerRoute({
-  endpoint: 'GET /internal/apm/ux/long-task-metrics',
-  params: t.type({
-    query: uxQueryRt,
-  }),
-  options: { tags: ['access:apm'] },
-  handler: async (
-    resources
-  ): Promise<{
-    noOfLongTasks: number;
-    sumOfLongTasks: number;
-    longestLongTask: number;
-  }> => {
-    const setup = await setupUXRequest(resources);
-
-    const {
-      query: { urlQuery, percentile, start, end },
-    } = resources.params;
-
-    return getLongTaskMetrics({
-      setup,
-      urlQuery,
-      percentile: percentile ? Number(percentile) : undefined,
-      start,
-      end,
-    });
-  },
-});
-
-const rumHasDataRoute = createApmServerRoute({
-  endpoint: 'GET /api/apm/observability_overview/has_rum_data',
-  params: t.partial({
-    query: t.partial({
-      uiFilters: t.string,
-      start: isoToEpochRt,
-      end: isoToEpochRt,
-    }),
-  }),
-  options: { tags: ['access:apm'] },
-  handler: async (
-    resources
-  ): Promise<{
-    indices: string;
-    hasData: boolean;
-    serviceName: string | number | undefined;
-  }> => {
-    const setup = await setupUXRequest(resources);
-    const {
-      query: { start, end },
-    } = resources.params;
-    return await hasRumData({ setup, start, end });
-  },
-});
-
 function decodeUiFilters(
   logger: Logger,
   uiFiltersEncoded?: string
@@ -297,11 +181,7 @@ async function setupUXRequest<TParams extends SetupUXRequestParams>(
 }
 
 export const rumRouteRepository = {
-  ...rumClientMetricsRoute,
   ...rumPageLoadDistributionRoute,
   ...rumPageLoadDistBreakdownRoute,
   ...rumPageViewsTrendRoute,
-  ...rumVisitorsBreakdownRoute,
-  ...rumLongTaskMetrics,
-  ...rumHasDataRoute,
 };
