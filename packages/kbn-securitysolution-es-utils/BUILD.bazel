@@ -44,6 +44,7 @@ RUNTIME_DEPS = [
 ]
 
 TYPES_DEPS = [
+  "//packages/core/http/core-http-server:npm_module_types",
   "@npm//@elastic/elasticsearch",
   "@npm//@hapi/boom",
   "@npm//tslib",
