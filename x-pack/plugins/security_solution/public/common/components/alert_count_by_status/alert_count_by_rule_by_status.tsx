@@ -51,7 +51,20 @@ type GetTableColumns = (
   openRuleInTimelineWithAdditionalFields: (ruleName: string) => void
 ) => Array<EuiBasicTableColumn<AlertCountByRuleByStatusItem>>;
 
-const STATUSES = ['open', 'acknowledged', 'closed'] as const;
+const STATUSES = [
+  {
+    label: i18n.ALERTS_OPEN_STATUS_LABEL,
+    key: 'open',
+  },
+  {
+    label: i18n.ALERTS_ACKNOWLEDGED_STATUS_LABEL,
+    key: 'acknowledged',
+  },
+  {
+    label: i18n.ALERTS_CLOSED_STATUS_LABEL,
+    key: 'closed',
+  },
+];
 const ALERT_COUNT_BY_RULE_BY_STATUS = 'alerts-by-status-by-rule';
 const LOCAL_STORAGE_KEY = 'alertCountByFieldNameWidgetSettings';
 

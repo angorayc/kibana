@@ -44,3 +44,45 @@ export const NO_ALERTS_FOUND = i18n.translate(
     defaultMessage: 'No alerts to display',
   }
 );
+
+export const ALERTS_OPEN_STATUS_LABEL = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.open.label`,
+  {
+    defaultMessage: 'open',
+  }
+);
+
+export const ALERTS_OPEN_STATUS_META = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.open.meta`,
+  {
+    defaultMessage: 'Filter by alert status: open',
+  }
+);
+
+export const ALERTS_ACKNOWLEDGED_STATUS_LABEL = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.acknowledged.label`,
+  {
+    defaultMessage: 'acknowledged',
+  }
+);
+
+export const ALERTS_ACKNOWLEDGED_STATUS_META = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.acknowledged.meta`,
+  {
+    defaultMessage: 'Filter by alert status: acknowledged',
+  }
+);
+
+export const ALERTS_CLOSED_STATUS_LABEL = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.closed.label`,
+  {
+    defaultMessage: 'closed',
+  }
+);
+
+export const ALERTS_CLOSED_STATUS_META = i18n.translate(
+  `xpack.securitySolution.components.multiselectPopover.closed.meta`,
+  {
+    defaultMessage: 'Filter by alert status: closed',
+  }
+);

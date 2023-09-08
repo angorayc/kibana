@@ -7,10 +7,12 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { EuiFilterButton, EuiFilterGroup, EuiFilterSelectItem, EuiPopover } from '@elastic/eui';
+import type { EuiSelectableOption } from '@elastic/eui';
+import { EuiFilterButton, EuiFilterGroup, EuiSelectable, EuiPopover } from '@elastic/eui';
+import { css } from '@emotion/react';
 export interface MultiSelectPopoverProps {
   title: string;
-  allItems: readonly string[];
+  allItems: readonly EuiSelectableOption[];
   selectedItems: string[];
   onSelectedItemsChange: (newItems: string[]) => void;
 }
@@ -19,23 +21,33 @@ export const MultiSelectPopover = React.memo(
   ({ allItems, selectedItems, title, onSelectedItemsChange }: MultiSelectPopoverProps) => {
     const [isItemPopoverOpen, setIsItemPopoverOpen] = useState(false);
 
-    const onChange = useCallback(
-      (item: string) => onSelectedItemsChange(getUpdatedSelectedItems(item, selectedItems)),
-      [selectedItems, onSelectedItemsChange]
+    const onChangeSelectable = useCallback(
+      (opts: EuiSelectableOption[]) => {
+        if (opts != null && opts.length > 0) {
+          onSelectedItemsChange(
+            opts.reduce<string[]>((acc, option) => {
+              if (option.checked === 'on' && option.key != null) {
+                acc.push(option.key);
+              }
+              return acc;
+            }, [])
+          );
+        }
+      },
+      [onSelectedItemsChange]
     );
 
-    const itemList = useMemo(() => {
-      return allItems.map((item, index) => (
-        <EuiFilterSelectItem
-          checked={selectedItems.includes(item) ? 'on' : undefined}
-          key={`${index}-${item}`}
-          onClick={() => onChange(item)}
-          title={item}
-        >
-          {item}
-        </EuiFilterSelectItem>
-      ));
-    }, [allItems, selectedItems, onChange]);
+    const options = useMemo(
+      () =>
+        allItems.map((item, index) => ({
+          label: item.label,
+          checked: (item.key != null && selectedItems.includes(item.key)
+            ? 'on'
+            : undefined) as EuiSelectableOption['checked'],
+          key: `${item.key}-${index}`,
+        })),
+      [allItems, selectedItems]
+    );
 
     const togglePopover = useCallback(
       (toState?: boolean) => {
@@ -67,21 +79,18 @@ export const MultiSelectPopover = React.memo(
         closePopover={() => togglePopover(false)}
         panelPaddingSize="none"
       >
-        {itemList}
+        <EuiSelectable
+          css={css`
+            width: 160px;
+          `}
+          onChange={onChangeSelectable}
+          options={options}
+        >
+          {(list) => list}
+        </EuiSelectable>
       </EuiPopover>
     );
   }
 );
 
 MultiSelectPopover.displayName = 'MultiSelectPopover';
-
-const getUpdatedSelectedItems = (item: string, selectedItems: string[]): string[] => {
-  const selectedGroupIndex = selectedItems.indexOf(item);
-  const updatedSelectedItems = [...selectedItems];
-  if (selectedGroupIndex >= 0) {
-    updatedSelectedItems.splice(selectedGroupIndex, 1);
-  } else {
-    updatedSelectedItems.push(item);
-  }
-  return updatedSelectedItems;
-};
