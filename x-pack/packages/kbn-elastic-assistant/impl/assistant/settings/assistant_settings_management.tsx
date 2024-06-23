@@ -24,13 +24,13 @@ import {
   AnonymizationSettings,
   ConversationSettings,
   EvaluationSettings,
-  KnowledgeBaseSettings,
   QuickPromptSettings,
   SystemPromptSettings,
 } from '.';
 import { useLoadConnectors } from '../../connectorland/use_load_connectors';
 import { getDefaultConnector } from '../helpers';
 import { useFetchAnonymizationFields } from '../api/anonymization_fields/use_fetch_anonymization_fields';
+import { KnowledgeBaseSettingsManagement } from '../../knowledge_base/knowledge_base_settings_management.tsx';
 
 export const CONVERSATIONS_TAB = 'CONVERSATION_TAB' as const;
 export const QUICK_PROMPTS_TAB = 'QUICK_PROMPTS_TAB' as const;
@@ -296,7 +296,7 @@ export const AssistantSettingsManagement: React.FC<Props> = React.memo(
             />
           )}
           {selectedSettingsTab === KNOWLEDGE_BASE_TAB && (
-            <KnowledgeBaseSettings
+            <KnowledgeBaseSettingsManagement
               knowledgeBase={knowledgeBase}
               setUpdatedKnowledgeBaseSettings={handleChange(setUpdatedKnowledgeBaseSettings)}
             />
