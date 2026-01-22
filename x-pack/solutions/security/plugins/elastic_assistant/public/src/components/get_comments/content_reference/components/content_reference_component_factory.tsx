@@ -26,6 +26,7 @@ import { ContentReferenceButton } from './content_reference_button';
 import { ProductDocumentationReference } from './product_documentation_reference';
 import { EsqlQueryReference } from './esql_query_reference';
 import { HrefReference } from './href_reference';
+import { SavedObjectReference } from './saved_object_reference';
 
 /** While a message is being streamed, content references are null. When a message has finished streaming, content references are either defined or undefined */
 export type StreamingOrFinalContentReferences = ContentReferences | undefined | null;
@@ -100,6 +101,15 @@ export const ContentReferenceComponentFactory: React.FC<Props> = ({
         <HrefReference
           contentReferenceNode={
             contentReferenceNode as ResolvedContentReferenceNode<HrefContentReference>
+          }
+        />
+      );
+    }
+    case 'SavedObject': {
+      return (
+        <SavedObjectReference
+          contentReferenceNode={
+            contentReferenceNode as ResolvedContentReferenceNode<SavedObjectContentReference>
           }
         />
       );

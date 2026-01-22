@@ -330,6 +330,23 @@ components:
               type: string
               enum: [SecurityAlertsPage]
               example: 'SecurityAlertsPage'
+    SavedObjectContentReference:
+      description: References a saved object
+      allOf:
+        - $ref: '#/components/schemas/BaseContentReference'
+        - type: object
+          properties:
+            savedObjectType:
+              type: string
+              example: 'lens'
+            savedObjectTitle:
+              description: Title of the saved object
+              type: string
+              example: 'My Lens Visualization'
+            savedObjectId:
+              description: ID of the saved object
+              type: string
+              example: 'savedObject123'
 
     ProductDocumentationContentReference:
       description: References the product documentation
@@ -363,6 +380,7 @@ components:
         - $ref: '#/components/schemas/ProductDocumentationContentReference'
         - $ref: '#/components/schemas/EsqlContentReference'
         - $ref: '#/components/schemas/HrefContentReference'
+        - $ref: '#/components/schemas/SavedObjectContentReference'
           additionalProperties: false
 
     ContentReferences:
@@ -375,6 +393,7 @@ components:
           - $ref: '#/components/schemas/ProductDocumentationContentReference'
           - $ref: '#/components/schemas/EsqlContentReference'
           - $ref: '#/components/schemas/HrefContentReference'
+          - $ref: '#/components/schemas/SavedObjectContentReference'
             additionalProperties: false
       type: object
 

@@ -30,6 +30,7 @@ export {
   securityAlertsPageReference,
   productDocumentationReference,
   esqlQueryReference,
+  savedObjectReference,
   contentReferenceString,
   contentReferenceBlock,
   removeContentReferences,

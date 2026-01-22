@@ -98,6 +98,9 @@ export const INVOKE_ASSISTANT_SUCCESS_EVENT: EventTypeOpts<{
     EntityRiskScoreTool?: number;
     IntegrationKnowledgeTool?: number;
     AssetMisconfigurationsTool?: number;
+    SavedObjectsCreationTool?: number;
+    SavedObjectsRetrievalTool?: number;
+    CheckDocumentsTool?: number;
   };
   model?: string;
   isOssModel?: boolean;
@@ -156,6 +159,9 @@ export const INVOKE_ASSISTANT_SUCCESS_EVENT: EventTypeOpts<{
         EntityRiskScoreTool: toolCountSchema,
         IntegrationKnowledgeTool: toolCountSchema,
         AssetMisconfigurationsTool: toolCountSchema,
+        CheckDocumentsTool: toolCountSchema,
+        SavedObjectsCreationTool: toolCountSchema,
+        SavedObjectsRetrievalTool: toolCountSchema,
       },
     },
   },

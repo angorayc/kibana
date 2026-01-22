@@ -16,6 +16,9 @@ import { SECURITY_LABS_KNOWLEDGE_BASE_TOOL } from './security_labs/security_labs
 import { ENTITY_RISK_SCORE_TOOL } from './entity_risk_score/entity_risk_score';
 import { INTEGRATION_KNOWLEDGE_TOOL } from './integration_knowledge/integration_knowledge_tool';
 import { ASSET_MISCONFIGURATIONS_TOOL } from './asset_misconfigurations/asset_misconfigurations_tool';
+import { SAVED_OBJECTS_RETRIEVAL_TOOL } from './saved_objects/saved_objects_retrieval_tool';
+import { SAVED_OBJECTS_CREATION_TOOL } from './saved_objects/saved_objects_creation_tool';
+import { CHECK_DOCUMENTS_TOOL } from './saved_objects/check_documents_tool';
 
 // any new tool should also be added to telemetry schema in
 // x-pack/solutions/security/plugins/elastic_assistant/server/lib/telemetry/event_based_telemetry.ts
@@ -31,4 +34,7 @@ export const assistantTools = [
   ENTITY_RISK_SCORE_TOOL,
   INTEGRATION_KNOWLEDGE_TOOL,
   ASSET_MISCONFIGURATIONS_TOOL,
+  SAVED_OBJECTS_CREATION_TOOL,
+  SAVED_OBJECTS_RETRIEVAL_TOOL,
+  CHECK_DOCUMENTS_TOOL,
 ];

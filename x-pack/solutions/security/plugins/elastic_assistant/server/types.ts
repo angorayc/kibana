@@ -301,6 +301,7 @@ export interface AssistantToolParams {
   size?: number;
   telemetry?: AnalyticsServiceSetup;
   createLlmInstance?: () => Promise<AssistantToolLlm>;
+  savedObjectsClient: SavedObjectsClientContract;
 }
 
 /**

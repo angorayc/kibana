@@ -305,6 +305,24 @@ export const SecurityAlertsPageContentReference = BaseContentReference.merge(
 );
 
 /**
+ * References a saved object
+ */
+export type SavedObjectContentReference = z.infer<typeof SavedObjectContentReference>;
+export const SavedObjectContentReference = BaseContentReference.merge(
+  z.object({
+    savedObjectType: z.string().optional(),
+    /**
+     * Title of the saved object
+     */
+    savedObjectTitle: z.string().optional(),
+    /**
+     * ID of the saved object
+     */
+    savedObjectId: z.string().optional(),
+  })
+);
+
+/**
  * References the product documentation
  */
 export type ProductDocumentationContentReference = z.infer<
@@ -334,6 +352,7 @@ export const ContentReferenceInternal = z.union([
   ProductDocumentationContentReference,
   EsqlContentReference,
   HrefContentReference,
+  SavedObjectContentReference,
 ]);
 
 export type ContentReference = z.infer<typeof ContentReferenceInternal>;
@@ -353,6 +372,7 @@ export const ContentReferences = z
       ProductDocumentationContentReference,
       EsqlContentReference,
       HrefContentReference,
+      SavedObjectContentReference,
     ])
   );
 

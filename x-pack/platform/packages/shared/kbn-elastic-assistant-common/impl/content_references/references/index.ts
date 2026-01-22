@@ -12,8 +12,34 @@ import type {
   ProductDocumentationContentReference,
   EsqlContentReference,
   HrefContentReference,
+  SavedObjectContentReference,
 } from '../../schemas';
 import type { ContentReferenceId } from '../types';
+
+/**
+ * Generates a contentReference for the saved object tool.
+ * @param id id of the contentReference
+ * @returns SavedObjectContentReference
+ */
+export const savedObjectReference = ({
+  id,
+  savedObjectId,
+  savedObjectTitle,
+  savedObjectType,
+}: {
+  id: string;
+  savedObjectId?: string;
+  savedObjectTitle?: string;
+  savedObjectType?: string;
+}): SavedObjectContentReference => {
+  return {
+    id,
+    type: 'SavedObject',
+    savedObjectTitle,
+    savedObjectType,
+    savedObjectId,
+  };
+};
 
 /**
  * Generates a contentReference for the alerts count tool.
