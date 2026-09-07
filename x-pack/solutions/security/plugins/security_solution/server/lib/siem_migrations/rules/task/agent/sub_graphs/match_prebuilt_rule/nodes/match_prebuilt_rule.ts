@@ -23,18 +23,14 @@ import {
 } from '../../../../../constants';
 import {
   CREATE_PREBUILT_RULE_SEMANTIC_QUERY_PROMPT_V2,
-  MATCH_PREBUILT_RULE_PROMPT_GENERIC_V2,
-  MATCH_PREBUILT_RULE_PROMPT_SPLUNK_V2,
+  MATCH_GUIDELINES_GENERIC,
+  MATCH_GUIDELINES_SPLUNK,
   MATCH_PREBUILT_RULE_SYSTEM_PROMPT_V2,
-  formatPreviousQueriesPrompt,
-  formatRetrySearchPrompt,
-  formatSearchInstructionsPrompt,
 } from '../prompts';
 import {
   NO_MATCH_SUMMARY,
   type MatchPrebuiltRuleState,
   type MatchPrebuiltRulesResult,
-  type PreviousSearchAttempt,
 } from '../state';
 
 interface GetMatchPrebuiltRuleAgentNodeParams {
@@ -108,61 +104,34 @@ export const getMatchPrebuiltRuleAgentNode = ({
 
   return async (state: MatchPrebuiltRuleState): Promise<Partial<MatchPrebuiltRuleState>> => {
     const matchPrebuiltRulesMessages = state.match_prebuilt_rules_messages;
-    // Splunk has no nl_query, so we use the raw title/description/query.
     const ruleContext =
       state.nl_query ||
       `Title: ${state.original_rule.title}\nDescription: ${state.original_rule.description}\nQuery: ${state.original_rule.query}`;
     const techniqueIds = state.original_rule.annotations?.mitre_attack?.join(',') ?? '';
-    const previousSearchAttempts = getPreviousSearchAttempts(matchPrebuiltRulesMessages);
-    // Only needed on the first turn and when the last search returned no candidates.
-    const formatCreateSemanticQueryMessages = () =>
-      CREATE_PREBUILT_RULE_SEMANTIC_QUERY_PROMPT_V2.formatMessages({
-        ruleContext,
-        vendor: state.original_rule.vendor,
-        mitreAttackIds: techniqueIds,
-        searchInstructions: formatSearchInstructionsPrompt(previousSearchAttempts),
-      });
+    const matchGuidelines =
+      state.original_rule.vendor === 'splunk' ? MATCH_GUIDELINES_SPLUNK : MATCH_GUIDELINES_GENERIC;
 
-    if (matchPrebuiltRulesMessages.length > 0) {
-      const matchPrompt =
-        state.original_rule.vendor === 'splunk'
-          ? MATCH_PREBUILT_RULE_PROMPT_SPLUNK_V2
-          : MATCH_PREBUILT_RULE_PROMPT_GENERIC_V2;
+    if (matchPrebuiltRulesMessages.length === 0) {
+      const prompt = [
+        ...(await MATCH_PREBUILT_RULE_SYSTEM_PROMPT_V2.formatMessages({ matchGuidelines })),
+        ...(await CREATE_PREBUILT_RULE_SEMANTIC_QUERY_PROMPT_V2.formatMessages({
+          ruleContext,
+          vendor: state.original_rule.vendor,
+          mitreAttackIds: techniqueIds,
+        })),
+      ];
 
-      // Detects the router's retry path: last message is a no-match AIMessage with no tool calls.
-      const lastMessage = matchPrebuiltRulesMessages.at(-1);
-      const isRetryAfterNoMatch =
-        AIMessage.isInstance(lastMessage) && !lastMessage.tool_calls?.length;
-
-      // Match prompt with candidates, query prompt on empty search, retry prompt after a no-match.
-      const injectedMessages = isRetryAfterNoMatch
-        ? [new HumanMessage(formatRetrySearchPrompt(previousSearchAttempts))]
-        : hasCandidatesToEvaluate(matchPrebuiltRulesMessages)
-        ? await matchPrompt.formatMessages({
-            previousQueries: formatPreviousQueriesPrompt(previousSearchAttempts),
-          })
-        : await formatCreateSemanticQueryMessages();
-
-      const { aiMessage, matchResult } = await invokeAndValidateFinalAnswer([
-        ...matchPrebuiltRulesMessages,
-        ...injectedMessages,
-      ]);
-
+      const { aiMessage, matchResult } = await invokeAndValidateFinalAnswer(prompt);
       return {
-        match_prebuilt_rules_messages: [...injectedMessages, aiMessage],
+        match_prebuilt_rules_messages: [...prompt, aiMessage],
         match_prebuilt_rules_result: matchResult,
       };
     }
 
-    const prompt = [
-      ...(await MATCH_PREBUILT_RULE_SYSTEM_PROMPT_V2.formatMessages({})),
-      ...(await formatCreateSemanticQueryMessages()),
-    ];
-
-    const { aiMessage, matchResult } = await invokeAndValidateFinalAnswer(prompt);
-    // First turn — starts the conversation and issues the initial search
+    // Subsequent turns — model reads its own history, no injection needed
+    const { aiMessage, matchResult } = await invokeAndValidateFinalAnswer(matchPrebuiltRulesMessages);
     return {
-      match_prebuilt_rules_messages: [...prompt, aiMessage],
+      match_prebuilt_rules_messages: [aiMessage],
       match_prebuilt_rules_result: matchResult,
     };
   };
@@ -198,7 +167,7 @@ export const getFinalizeMatchNode = ({ telemetryClient }: GetFinalizeMatchNodePa
   };
 };
 
-const getSearchCandidates = (messages: BaseMessage[]): RuleSemanticSearchResult[] => {
+export const getSearchCandidates = (messages: BaseMessage[]): RuleSemanticSearchResult[] => {
   const byName = new Map<string, RuleSemanticSearchResult>();
   for (const message of messages) {
     if (ToolMessage.isInstance(message) && Array.isArray(message.artifact)) {
@@ -211,43 +180,7 @@ const getSearchCandidates = (messages: BaseMessage[]): RuleSemanticSearchResult[
   return [...byName.values()];
 };
 
-/** True when the last search returned candidates; checks only the last message, not earlier searches. */
-const hasCandidatesToEvaluate = (messages: BaseMessage[]): boolean => {
-  const lastMessage = messages.at(-1);
-  return (
-    ToolMessage.isInstance(lastMessage) &&
-    Array.isArray(lastMessage.artifact) &&
-    lastMessage.artifact.length > 0
-  );
-};
-
-const getPreviousSearchAttempts = (messages: BaseMessage[]): PreviousSearchAttempt[] => {
-  const toolResultsByCallId = new Map<string, RuleSemanticSearchResult[]>();
-  messages.forEach((message) => {
-    if (ToolMessage.isInstance(message) && message.name === 'searchPrebuiltRules') {
-      toolResultsByCallId.set(
-        message.tool_call_id,
-        Array.isArray(message.artifact) ? (message.artifact as RuleSemanticSearchResult[]) : []
-      );
-    }
-  });
-
-  return messages.filter(AIMessage.isInstance).flatMap((message) =>
-    (message.tool_calls ?? [])
-      .filter(
-        (toolCall) =>
-          toolCall.name === 'searchPrebuiltRules' && typeof toolCall.args.query === 'string'
-      )
-      .map((toolCall) => ({
-        query: toolCall.args.query as string,
-        candidateNames: (toolCall.id ? toolResultsByCallId.get(toolCall.id) ?? [] : []).map(
-          ({ name }) => name
-        ),
-      }))
-  );
-};
-
-const buildMatchResult = (
+export const buildMatchResult = (
   matchedRule: RuleSemanticSearchResult,
   summary: string | undefined
 ): Partial<MatchPrebuiltRuleState> => {

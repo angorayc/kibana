@@ -29,12 +29,6 @@ export interface MatchPrebuiltRulesResult {
   summary?: string;
 }
 
-/** A past `searchPrebuiltRules` call paired with the candidate names it returned. */
-export interface PreviousSearchAttempt {
-  query: string;
-  candidateNames: string[];
-}
-
 export const matchPrebuiltRuleState = Annotation.Root({
   original_rule: Annotation<OriginalRule>(),
 

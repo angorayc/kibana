@@ -6,15 +6,11 @@
  */
 
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { MAX_TOOL_CALL_ATTEMPTS, type PreviousSearchAttempt } from './state';
+import { MAX_TOOL_CALL_ATTEMPTS } from './state';
 
 const AGENT_ROLE_GUIDELINES = `You are an expert assistant in Cybersecurity helping migrate SIEM detection rules to Elastic Security.
 Your goal is to find an Elastic Prebuilt Detection Rule that covers the same use case as the source rule, if any.
 You have no built-in knowledge of the current Elastic pre-built rule catalog — always use the searchPrebuiltRules tool to retrieve candidates before deciding.`;
-
-export const MATCH_PREBUILT_RULE_SYSTEM_PROMPT_V2 = ChatPromptTemplate.fromMessages([
-  ['system', AGENT_ROLE_GUIDELINES],
-]);
 
 // Mirrors CREATE_SEMANTIC_QUERY_PROMPT's system message (../../nodes/create_semantic_query/prompts.ts)
 // — same keyword-extraction task and category breakdown, just retargeted at the tool's "query"
@@ -56,7 +52,7 @@ const MATCH_CORE_GUIDELINE_BULLETS = [
 ];
 
 const buildMatchGuidelines = (bullets: string[]) => `<matching_guidelines>
-Evaluate the candidates returned by your last searchPrebuiltRules call:
+When searchPrebuiltRules returns candidates, evaluate them:
 ${bullets.join('\n')}
 
 If one of them is a match, reply with the final JSON described below — do not search again hoping for a better candidate.
@@ -67,11 +63,11 @@ Search again only if you can name a specific defect in the query you just issued
 - it missed the attack technique the source rule detects;
 - all returned candidates are completely unrelated to the source rule (different technology, different attack domain, different use case) — this signals the query keywords were wrong, not that no rule exists.
 A scope difference alone is not a query defect: if a candidate is merely broader or narrower than the source rule but covers the same use case, answer with an empty "match" instead.
-You may call searchPrebuiltRules at most ${MAX_TOOL_CALL_ATTEMPTS} times in total. Once that many queries are listed below, you cannot search again — decide from the candidates you already have and reply with the final JSON.{previousQueries}
+You may call searchPrebuiltRules at most ${MAX_TOOL_CALL_ATTEMPTS} times in total. You can track this by counting your own tool calls in the conversation history. Once you have issued that many queries, decide from the candidates you already have and reply with the final JSON. Do not reuse or lightly reword a query you have already tried — use a meaningfully different angle.
 </matching_guidelines>`;
 
-const MATCH_GUIDELINES_SPLUNK = buildMatchGuidelines(MATCH_CORE_GUIDELINE_BULLETS_SPLUNK);
-const MATCH_GUIDELINES_GENERIC = buildMatchGuidelines(MATCH_CORE_GUIDELINE_BULLETS);
+export const MATCH_GUIDELINES_SPLUNK = buildMatchGuidelines(MATCH_CORE_GUIDELINE_BULLETS_SPLUNK);
+export const MATCH_GUIDELINES_GENERIC = buildMatchGuidelines(MATCH_CORE_GUIDELINE_BULLETS);
 
 const OUTPUT_FORMAT_GUIDELINES = `<expected_output>
 - Always reply with a JSON object with the field "match" and the value being the most relevant matched elastic detection rule name if any, else the value should be an emptry string, and a "summary" entry with the reasons behind the match. Do not reply with anything else.
@@ -103,17 +99,25 @@ A: Please find the resulting JSON response below:
 \`\`\`
 </example_response_no_match>`;
 
-/**
- * Injected on the first turn, and again only when a search comes back empty — the two cases where
- * the model has nothing to evaluate and its sole job is to produce a query. On an evaluation turn
- * with candidates the match prompt goes in alone, because this message's source rule and query
- * guidelines are already earlier in the conversation.
- */
+export const MATCH_PREBUILT_RULE_SYSTEM_PROMPT_V2 = ChatPromptTemplate.fromMessages<{
+  matchGuidelines: string;
+}>([
+  [
+    'system',
+    `${AGENT_ROLE_GUIDELINES}
+
+${PREBUILT_RULES_SEMANTIC_QUERY_GUIDELINES}
+
+{matchGuidelines}
+
+${OUTPUT_FORMAT_GUIDELINES}`,
+  ],
+]);
+
 export const CREATE_PREBUILT_RULE_SEMANTIC_QUERY_PROMPT_V2 = ChatPromptTemplate.fromMessages<{
   ruleContext: string;
   vendor: string;
   mitreAttackIds: string;
-  searchInstructions: string;
 }>([
   [
     'human',
@@ -122,114 +126,6 @@ export const CREATE_PREBUILT_RULE_SEMANTIC_QUERY_PROMPT_V2 = ChatPromptTemplate.
 - vendor: {vendor}
 - mitre_attack_technique_ids: {mitreAttackIds}
 
-${PREBUILT_RULES_SEMANTIC_QUERY_GUIDELINES}
-{searchInstructions}`,
-  ],
-]);
-
-const FIRST_SEARCH_INSTRUCTIONS = `
-Call the searchPrebuiltRules tool with your best query to find candidate Elastic pre-built detection rules for this source rule.`;
-
-/**
- * Closes the query-generation message. With no prior attempts this is the plain "call the tool"
- * directive for the first search. Prior attempts only exist here when the latest search returned no
- * candidates — the caller injects the match prompt instead whenever there is something to evaluate —
- * so in that branch every listed query genuinely failed and can be described as such.
- */
-export const formatSearchInstructionsPrompt = (
-  previousSearchAttempts: PreviousSearchAttempt[]
-): string => {
-  if (previousSearchAttempts.length === 0) {
-    return FIRST_SEARCH_INSTRUCTIONS;
-  }
-
-  const attempts = previousSearchAttempts
-    .map(({ query, candidateNames }) => {
-      const candidates =
-        candidateNames.length > 0 ? candidateNames.map((name) => `"${name}"`).join(', ') : 'none';
-      return `- Query: "${query}"\n  Candidates: ${candidates}`;
-    })
-    .join('\n');
-
-  return `
-<previous_search_attempts>
-${attempts}
-</previous_search_attempts>
-
-Your most recent search returned no candidates. The block above lists every query already issued for this source rule and what each returned; none of them produced a match.
-Call searchPrebuiltRules with a meaningfully different query — not a light rewording of one listed above.`;
-};
-
-/**
- * Graph-injected retry prompt after a no-match JSON answer: asks the model to search once more
- * from a different keyword angle. `matchPrebuiltRuleRouter` uses the prefix to tell a declined
- * retry (this prompt already shown, model answered JSON again) from a no-match that followed a search.
- */
-export const RETRY_SEARCH_PROMPT_PREFIX =
-  'Your last search returned candidates but none were a match.';
-
-export const isRetrySearchPromptMessage = (message: { content?: unknown }): boolean =>
-  typeof message.content === 'string' && message.content.startsWith(RETRY_SEARCH_PROMPT_PREFIX);
-
-/**
- * Injected by the agent node when the router sends the run back after a no-match JSON answer.
- * Remaining searches is leftover `MAX_TOOL_CALL_ATTEMPTS` so the 1st and 2nd no-match can
- * each re-search; the 3rd no-match has no budget left and finalizes.
- */
-export const formatRetrySearchPrompt = (
-  previousSearchAttempts: PreviousSearchAttempt[]
-): string => {
-  const queries = previousSearchAttempts.map(({ query }) => `"${query}"`).join(', ');
-  const remainingSearches = MAX_TOOL_CALL_ATTEMPTS - previousSearchAttempts.length;
-  return (
-    `${RETRY_SEARCH_PROMPT_PREFIX} ` +
-    'Before concluding there is no matching prebuilt rule, try one more search from a ' +
-    'different keyword angle — focus on the attack category, the detection technique, ' +
-    'or a related technology rather than rewording the same query.\n' +
-    `Queries already tried: ${queries}. Do not reuse or lightly reword any of them.\n` +
-    `You may call searchPrebuiltRules at most ${remainingSearches} more time(s) after this.`
-  );
-};
-
-/**
- * Compact companion to the above, for the `{previousQueries}` slot on the match prompts. On an
- * evaluation turn the candidates and their queries are already visible in the conversation, so this
- * only needs to name the queries so the model doesn't reuse one if it decides to search again.
- *
- * It doubles as how the model tracks the `MAX_TOOL_CALL_ATTEMPTS` cap stated in the matching
- * guidelines: comparing the length of this list against that number is a far more reliable way to
- * know when searching is exhausted than counting its own conversational turns. Returns `''` before
- * any search has happened.
- */
-export const formatPreviousQueriesPrompt = (
-  previousSearchAttempts: PreviousSearchAttempt[]
-): string => {
-  if (previousSearchAttempts.length === 0) {
-    return '';
-  }
-
-  const queries = previousSearchAttempts.map(({ query }) => `"${query}"`).join(', ');
-  return `\nQueries already tried: ${queries}. If you search again, do not reuse or lightly reword any of them.`;
-};
-
-export const MATCH_PREBUILT_RULE_PROMPT_SPLUNK_V2 = ChatPromptTemplate.fromMessages<{
-  previousQueries: string;
-}>([
-  [
-    'human',
-    `${MATCH_GUIDELINES_SPLUNK}
-
-${OUTPUT_FORMAT_GUIDELINES}`,
-  ],
-]);
-
-export const MATCH_PREBUILT_RULE_PROMPT_GENERIC_V2 = ChatPromptTemplate.fromMessages<{
-  previousQueries: string;
-}>([
-  [
-    'human',
-    `${MATCH_GUIDELINES_GENERIC}
-
-${OUTPUT_FORMAT_GUIDELINES}`,
+Call the searchPrebuiltRules tool with your best query to find candidate Elastic pre-built detection rules for this source rule.`,
   ],
 ]);

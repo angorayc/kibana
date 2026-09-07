@@ -332,6 +332,7 @@
       "name": "Security Automatic Migrations",
       "slackChannel": "#security-generative-ai-evals",
       "configPath": "x-pack/solutions/security/packages/kbn-evals-suite-security-automatic-migrations/playwright.config.ts",
+      "serverConfigSet": "evals_rule_migration_v2",
       "tags": [
         "security",
         "migrations"
